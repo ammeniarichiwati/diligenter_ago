@@ -1,0 +1,2479 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1e4d7b">
+  <title>KMKS Santo Hieronimus</title>
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+  <!-- Apple / iOS PWA meta tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KMKS Hieronimus">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <!-- Android / SEO -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="KMKS Hieronimus">
+  <meta name="description" content="Aplikasi jurnal bacaan Kitab Suci untuk Kelompok Santo Hieronimus, Paroki Brayat Minulyo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --crimson:    #1e4d7b;
+      --crimson-2:  #183f66;
+      --crimson-3:  #2a6099;
+      --gold:       #8ab4d4;
+      --gold-light: #b8d4e8;
+      --parch:      #f0f4f8;
+      --parch-2:    #e2eaf3;
+      --parch-3:    #c2d4e8;
+      --ink:        #1a2535;
+      --ink-2:      #243448;
+      --ink-3:      #4a6480;
+      --cream:      #f5f8fc;
+      --shadow:     rgba(26,45,65,0.15);
+      --shadow-deep:rgba(26,45,65,0.32);
+      --radius:     16px;
+      --transition: 0.22s cubic-bezier(.4,0,.2,1);
+      --sage:       #5a8ab0;
+      --sage-dark:  #1e4d7b;
+      --sage-light: #90b8d4;
+      --sage-pale:  #dce8f2;
+      --accent:     #1e4d7b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--parch);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+      background: var(--crimson);
+      display: flex; align-items: stretch;
+      height: 62px;
+      box-shadow: 0 -2px 16px var(--shadow-deep);
+      border-top: 1.5px solid rgba(100,160,210,0.35);
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; border: none; background: none; cursor: pointer;
+      color: rgba(255,255,255,0.55); font-family: 'Lora', serif;
+      font-size: 0.65rem; letter-spacing: 0.5px; text-transform: uppercase;
+      transition: color var(--transition), background var(--transition);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .nav-btn .ni { font-size: 1.35rem; line-height: 1; }
+    .nav-btn.aktif { color: var(--gold-light); }
+    .nav-btn:active { background: rgba(255,255,255,0.08); }
+
+    /* ─── PAGE SYSTEM ─── */
+    .page { display: none; min-height: calc(100vh - 62px); padding-bottom: 80px; animation: fadeUp 0.3s ease; }
+    .page.aktif { display: block; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ─── HEADER ─── */
+    .header {
+      background: linear-gradient(180deg, #14355a 0%, var(--crimson) 60%, var(--crimson-2) 100%);
+      padding: 28px 20px 22px;
+      text-align: center;
+      box-shadow: 0 4px 20px var(--shadow-deep);
+      position: relative; overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(45deg, rgba(100,160,210,0.06) 0, rgba(100,160,210,0.06) 1px, transparent 1px, transparent 12px);
+    }
+    .logo-ring {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: var(--cream); border: 3px solid var(--gold);
+      box-shadow: 0 0 0 1.5px var(--crimson-3), 0 0 0 5px rgba(100,160,210,0.35), 0 6px 24px var(--shadow-deep);
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .logo-ring img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .header-title {
+      font-family: 'Playfair Display', serif; color: #fff; font-size: 1.1rem; font-weight: 600;
+      letter-spacing: 0.5px; text-shadow: 0 1px 6px rgba(10,20,40,0.5); margin-bottom: 2px;
+    }
+    .header-sub { color: var(--gold-light); font-size: 0.8rem; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.9; }
+    .header-group { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; margin-top: 4px; letter-spacing: 1px; }
+
+    /* ─── QUOTE ─── */
+    .quote-strip {
+      background: rgba(255,255,255,0.55); backdrop-filter: blur(4px);
+      border-left: none;
+      border-radius: 0 12px 12px 0;
+      padding: 14px 18px; margin: 18px 16px;
+      font-style: italic; font-size: 1rem; color: var(--ink-2); line-height: 1.6;
+    }
+    .quote-strip cite { display: block; margin-top: 6px; font-size: 0.78rem; font-style: normal; color: var(--crimson); font-weight: 600; font-family: 'Playfair Display', serif; }
+
+    /* ─── SECTION LABEL ─── */
+    .section-label {
+      display: flex; align-items: center; gap: 10px;
+      margin: 18px 16px 10px; font-family: 'Playfair Display', serif;
+      font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .section-label::before, .section-label::after {
+      content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--parch-3), transparent);
+    }
+    .section-label::before { background: linear-gradient(90deg, transparent, var(--parch-3)); }
+
+    /* ─── BUTTONS ─── */
+    .btn-group { display: flex; flex-direction: column; gap: 11px; margin: 0 16px 6px; }
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 15px 20px; border: none; border-radius: var(--radius);
+      font-family: 'Lora', serif; font-size: 1rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; position: relative; overflow: hidden;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .btn::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,0); transition: background 0.15s;
+    }
+    .btn:active::after { background: rgba(255,255,255,0.12); }
+    .btn:active { transform: scale(0.975); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--crimson), var(--crimson-3));
+      color: #fff; box-shadow: 0 4px 18px rgba(26,45,100,0.4);
+    }
+    .btn-secondary {
+      background: var(--cream); color: var(--ink-2);
+      border: 1.5px solid var(--parch-3);
+      box-shadow: 0 2px 10px var(--shadow);
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #2a6099, var(--gold), #3a80bb);
+      color: #0a2040; box-shadow: 0 4px 18px rgba(26,77,123,0.35);
+      font-weight: 700;
+    }
+    .btn-wa {
+      background: linear-gradient(135deg, #0a5c9e, #1a8fd1);
+      color: #fff; box-shadow: 0 4px 18px rgba(26,143,209,0.3);
+    }
+    .btn-icon { font-size: 1.2rem; }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      display: flex; gap: 10px; margin: 12px 16px;
+    }
+    .stat-card {
+      flex: 1; background: rgba(255,255,255,0.65); backdrop-filter: blur(4px);
+      border: 1px solid var(--parch-3); border-radius: 12px; padding: 12px 10px;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700;
+      color: var(--crimson); line-height: 1;
+    }
+    .stat-lbl { font-size: 0.72rem; color: var(--ink-3); margin-top: 3px; }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-wrap { margin: 6px 16px 14px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--ink-3); margin-bottom: 5px; }
+    .progress-bar {
+      height: 8px; background: var(--parch-3); border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--crimson), var(--gold));
+      border-radius: 99px; transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(10,20,40,0.75); z-index: 800;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      backdrop-filter: blur(3px);
+    }
+    .modal-overlay.aktif { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .modal-box {
+      background: var(--cream); margin: 16px auto 100px;
+      max-width: 460px; border-radius: 20px;
+      padding: 24px 20px 28px;
+      box-shadow: 0 8px 40px var(--shadow-deep);
+      animation: slideUp 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes slideUp { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+    .modal-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px; border-bottom: 1px solid var(--parch-3); padding-bottom: 14px;
+    }
+    .modal-header h4 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--crimson); margin: 0; }
+    .modal-close {
+      margin-left: auto; background: none; border: 1.5px solid var(--parch-3);
+      color: var(--ink-3); width: 28px; height: 28px; border-radius: 50%;
+      font-size: 0.85rem; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: background var(--transition);
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--parch-2); color: var(--ink); }
+
+    /* ─── FORMS ─── */
+    .form-row { display: flex; gap: 10px; }
+    .form-row .form-group { flex: 1; }
+    .form-row .form-group:first-child { flex: 2; }
+    .form-group { margin-bottom: 13px; position: relative; }
+    .form-group label {
+      display: block; font-size: 0.82rem; font-weight: 600;
+      color: var(--ink-2); margin-bottom: 5px; font-family: 'Playfair Display', serif; letter-spacing: 0.3px;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 11px 13px; border: 1.5px solid var(--parch-3);
+      border-radius: 10px; font-size: 0.95rem; font-family: 'Lora', serif;
+      background: var(--parch); color: var(--ink); outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--crimson); box-shadow: 0 0 0 3px rgba(26,77,123,0.1);
+      background: #f8fbff;
+    }
+    .form-group textarea { height: 120px; resize: vertical; }
+    .form-group input.locked { background: var(--parch-2); color: var(--ink-2); cursor: default; font-weight: 600; }
+    .input-hint { font-size: 0.74rem; color: var(--ink-3); margin-top: 4px; font-style: italic; }
+
+    .dropdown-list {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: #f8fbff; border: 1.5px solid var(--crimson);
+      border-top: none; border-radius: 0 0 10px 10px;
+      z-index: 999; max-height: 190px; overflow-y: auto;
+      box-shadow: 0 6px 20px var(--shadow);
+    }
+    .dropdown-item {
+      padding: 10px 13px; font-size: 0.9rem; cursor: pointer;
+      border-bottom: 1px solid var(--parch-2); color: var(--ink);
+      transition: background 0.12s;
+    }
+    .dropdown-item:hover, .dropdown-item:active { background: var(--parch-2); }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .modal-actions .btn { margin: 0; padding: 13px 16px; }
+
+    /* ─── SYNC BADGE ─── */
+    .sync-info {
+      background: #fffde6; border: 1px solid var(--gold);
+      border-radius: 10px; padding: 9px 13px; margin-bottom: 14px;
+      font-size: 0.8rem; color: #6b4c00;
+    }
+
+    /* ─── RIWAYAT ITEMS ─── */
+    .riwayat-item {
+      background: rgba(255,255,255,0.7); border: 1px solid var(--parch-3);
+      border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+    .ri-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 7px; }
+    .ri-nama { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--crimson); font-size: 0.92rem; }
+    .ri-id   { font-size: 0.72rem; color: var(--crimson); opacity: 0.65; }
+    .ri-tgl  { font-size: 0.74rem; color: var(--ink-3); }
+    .ri-bacaan { font-size: 0.85rem; color: var(--ink-2); font-style: italic; margin-bottom: 6px; }
+    .ri-refleksi { font-size: 0.88rem; color: var(--ink); line-height: 1.55; }
+    .ri-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .badge {
+      font-size: 0.72rem; padding: 3px 9px; border-radius: 20px; font-family: 'Playfair Display', serif;
+    }
+    .badge-ok   { background: #d4edda; color: #155724; }
+    .badge-pend { background: #fff3cd; color: #856404; }
+    .btn-del {
+      background: none; border: 1.5px solid #f0b8b8; color: #c0392b;
+      border-radius: 8px; padding: 4px 12px; font-size: 0.78rem;
+      cursor: pointer; font-family: 'Lora', serif; transition: background 0.15s;
+    }
+    .btn-del:hover { background: #fdecea; }
+
+    /* ─── ALKITAB NAV ─── */
+    .alkitab-header {
+      background: linear-gradient(180deg, #14355a 0%, var(--crimson) 100%);
+      padding: 16px 14px 14px; position: sticky; top: 0; z-index: 200;
+      box-shadow: 0 2px 10px var(--shadow-deep);
+    }
+    .alkitab-search { display: flex; gap: 8px; margin-top: 10px; }
+    .alkitab-search input {
+      flex: 1; padding: 9px 12px; border-radius: 10px; border: none;
+      font-size: 0.9rem; font-family: 'Lora', serif;
+      background: rgba(255,255,255,0.15); color: #fff;
+    }
+    .alkitab-search input::placeholder { color: rgba(255,255,255,0.55); }
+    .alkitab-search input:focus { outline: none; background: rgba(255,255,255,0.22); }
+    .alkitab-search-title { color: var(--gold-light); font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; text-align: center; }
+
+    .testamen-tabs {
+      display: flex; margin: 12px 12px 6px; gap: 6px;
+    }
+    .tab-btn {
+      flex: 1; padding: 8px 6px; border: none; border-radius: 10px;
+      font-family: 'Playfair Display', serif; font-size: 0.72rem; letter-spacing: 0.5px;
+      cursor: pointer; transition: background var(--transition), color var(--transition);
+      background: var(--parch-2); color: var(--ink-3); text-transform: uppercase;
+    }
+    .tab-btn.aktif { background: var(--crimson); color: #fff; }
+
+    .kitab-list { padding: 6px 12px 16px; }
+    .kitab-item {
+      background: rgba(255,255,255,0.7); border: 1px solid var(--parch-3);
+      border-radius: 12px; margin-bottom: 6px; overflow: hidden;
+    }
+    .kitab-item.deutero { border-left: 3.5px solid var(--gold); }
+    .kitab-trigger {
+      width: 100%; padding: 13px 15px; border: none; background: none;
+      font-family: 'Lora', serif; font-size: 0.97rem; font-weight: 600;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; color: var(--ink);
+      transition: background var(--transition);
+    }
+    .kitab-trigger.open { color: var(--crimson); background: rgba(26,77,123,0.04); }
+    .kitab-trigger .chevron { transition: transform var(--transition); font-size: 0.75rem; }
+    .kitab-trigger.open .chevron { transform: rotate(180deg); }
+
+    .bab-panel { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .bab-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 7px; padding: 12px;
+      background: var(--parch);
+    }
+    .bab-btn {
+      padding: 10px 4px; background: var(--parch-2); text-align: center;
+      border-radius: 8px; cursor: pointer; font-size: 0.82rem;
+      color: var(--ink); border: none; font-family: 'Lora', serif;
+      transition: background var(--transition), color var(--transition);
+      font-weight: 500;
+    }
+    .bab-btn:hover { background: var(--crimson); color: #fff; }
+    .bab-btn.tercatat { background: #c8e6c9; color: #1b5e20; cursor: default; position: relative; }
+    .bab-btn.tercatat::after { content: '✓'; position: absolute; top: 1px; right: 3px; font-size: 9px; color: #2e7d32; }
+    .bab-btn:active { transform: scale(0.95); }
+
+    /* ─── PROFIL / LEADERBOARD ─── */
+    .profil-card {
+      background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-2) 100%);
+      border-radius: 18px; padding: 20px; margin: 14px 14px 12px;
+      color: #fff; box-shadow: 0 6px 24px rgba(26,77,123,0.35);
+    }
+    .profil-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 3px; }
+    .profil-id   { font-size: 0.8rem; opacity: 0.7; margin-bottom: 14px; }
+    .profil-stats { display: flex; gap: 12px; }
+    .profil-stat { flex: 1; background: rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; text-align: center; }
+    .profil-stat-num { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; }
+    .profil-stat-lbl { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .leaderboard { padding: 0 14px; }
+    .lb-item {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.65); border: 1px solid var(--parch-3);
+      border-radius: 12px; padding: 11px 14px; margin-bottom: 7px;
+    }
+    .lb-rank {
+      font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+      color: var(--ink-3); width: 24px; text-align: center;
+    }
+    .lb-rank.r1 { color: #c9a84c; }
+    .lb-rank.r2 { color: #94a3b8; }
+    .lb-rank.r3 { color: #cd7f32; }
+    .lb-name { flex: 1; font-weight: 600; color: var(--ink); font-size: 0.92rem; }
+    .lb-count { font-family: 'Playfair Display', serif; color: var(--crimson); font-weight: 700; font-size: 0.9rem; }
+    .lb-bar { height: 3px; background: var(--parch-3); border-radius: 99px; margin-top: 5px; overflow: hidden; }
+    .lb-fill { height: 100%; background: linear-gradient(90deg, var(--crimson), var(--gold)); border-radius: 99px; }
+
+    .empty-state { text-align: center; padding: 30px 10px; color: var(--ink-3); font-style: italic; }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed; bottom: 78px; left: 50%; z-index: 9999;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--ink); color: #fff;
+      padding: 11px 22px; border-radius: 99px; font-size: 0.88rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      max-width: 88vw; text-align: center;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 4px 20px var(--shadow-deep);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─── INSTALL BTN ─── */
+    #installBtn {
+      display: none; position: fixed;
+      bottom: 74px; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 32px); max-width: 440px; z-index: 600;
+    }
+
+    /* ─── FOOTER ─── */
+    .footer { text-align: center; padding: 18px; font-size: 0.72rem; color: var(--ink-3); }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes rubberBand {
+      0%   { transform: scale3d(1,1,1); }
+      30%  { transform: scale3d(1.2,0.8,1); }
+      40%  { transform: scale3d(0.8,1.2,1); }
+      50%  { transform: scale3d(1.12,0.9,1); }
+      70%  { transform: scale3d(0.97,1.03,1); }
+      100% { transform: scale3d(1,1,1); }
+    }
+    .bounce { animation: rubberBand 0.8s ease 0.5s 1; }
+
+    /* Filter input */
+    .filter-wrap { padding: 0 12px 6px; }
+    .filter-input {
+      width: 100%; padding: 9px 13px; border: 1.5px solid var(--parch-3);
+      border-radius: 10px; font-size: 0.9rem; font-family: 'Lora', serif;
+      background: var(--cream); color: var(--ink); outline: none;
+    }
+    .filter-input:focus { border-color: var(--crimson); }
+
+    /* ─── DATE PICK BUTTONS ─── */
+    .date-btn-row { display: flex; gap: 6px; }
+    .date-pick-btn {
+      flex: 1; padding: 8px 4px 10px; border: 1.5px solid var(--parch-3);
+      border-radius: 9px; font-family: 'Lora', serif; font-size: 0.8rem;
+      background: var(--parch); color: var(--ink-2); cursor: pointer;
+      text-align: center; transition: all var(--transition); line-height: 1.3;
+      min-height: 80px; display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; gap: 0;
+    }
+    .date-pick-btn.nonaktif {
+      background: var(--parch-2); color: var(--ink-3); border-color: var(--parch-3);
+      cursor: default; opacity: 0.5;
+    }
+    .date-pick-btn.nonaktif .dpb-day { opacity: 0.6; }
+    .date-pick-btn.aktif {
+      background: var(--crimson); color: #fff; border-color: var(--crimson); font-weight: 600;
+    }
+    .date-pick-btn .dpb-day { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; display: block; }
+    .date-pick-btn .dpb-mon { font-size: 0.72rem; opacity: 0.85; display: block; }
+    .date-pick-btn .dpb-jadwal {
+      font-size: 0.65rem; display: block; margin-top: 4px; line-height: 1.25;
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      color: var(--crimson);
+    }
+    .date-pick-btn.aktif .dpb-jadwal { color: rgba(255,255,255,0.92); }
+
+
+    /* ── PANDUAN MODAL ─────────────────────────── */
+    .panduan-box { max-width: 500px; width:95%; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; }
+    .panduan-box .modal-header { flex-shrink:0; }
+    .panduan-scroll { flex:1; overflow-y:auto; padding:0 18px 18px; }
+    .pand-intro { font-size:0.88rem; color:var(--ink-2); background:var(--parch-2);
+      border-left:4px solid var(--crimson); border-radius:0 8px 8px 0;
+      padding:10px 14px; margin-bottom:16px; line-height:1.6; }
+    .pand-intro strong { color:var(--crimson); }
+    .pand-search-wrap { position:sticky; top:0; background:#fff; padding:10px 0 8px; z-index:2; }
+    .pand-search { width:100%; padding:9px 13px; border:1.5px solid var(--parch-3);
+      border-radius:10px; font-size:0.9rem; font-family:'Lora',serif;
+      background:var(--cream); color:var(--ink); outline:none; box-sizing:border-box; }
+    .pand-search:focus { border-color:var(--crimson); }
+    .pand-section { margin-bottom:18px; }
+    .pand-section-title {
+      font-family:'Playfair Display',serif; font-size:0.78rem; letter-spacing:0.08em;
+      color:#fff; background:var(--accent); padding:5px 10px;
+      border-radius:6px; margin-bottom:8px; display:flex;
+      justify-content:space-between; align-items:center; }
+    .pand-section-title .pand-tag {
+      font-size:0.68rem; background:rgba(255,255,255,0.25);
+      padding:2px 7px; border-radius:10px; font-family:'Lora',serif;
+      font-style:italic; letter-spacing:0; }
+    .pand-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+    .pand-row { display:flex; justify-content:space-between; align-items:center;
+      padding:7px 10px; border-radius:7px; background:var(--parch);
+      border:1px solid var(--parch-2); cursor:pointer; transition:background 0.12s; }
+    .pand-row:hover, .pand-row:active { background:var(--parch-3); }
+    .pand-row.hidden { display:none; }
+    .pand-name { font-size:0.82rem; color:var(--ink); font-family:'Lora',serif; line-height:1.3; }
+    .pand-abbr { font-family:'Playfair Display',serif; font-size:0.78rem; color:var(--crimson);
+      font-weight:700; white-space:nowrap; margin-left:6px; }
+    .pand-tap-hint { font-size:0.72rem; color:var(--ink-3); text-align:center;
+      margin-top:4px; font-style:italic; }
+    .pand-no-result { text-align:center; color:var(--ink-3); font-style:italic;
+      padding:20px 0; font-size:0.88rem; display:none; }
+    .help-link { font-size:0.72rem; color:var(--crimson); text-decoration:none;
+      font-style:italic; cursor:pointer; display:inline-flex; align-items:center; gap:3px; }
+    .help-link:hover { text-decoration:underline; }
+
+    /* ─── BACAAN AUTOCOMPLETE ─── */
+    .bacaan-wrap { position: relative; }
+    .bacaan-dd {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: #f8fbff; border: 1.5px solid var(--crimson);
+      border-top: none; border-radius: 0 0 10px 10px;
+      z-index: 999; max-height: 200px; overflow-y: auto;
+      box-shadow: 0 6px 20px var(--shadow);
+      display: none;
+    }
+    .bacaan-dd-item {
+      padding: 9px 13px; font-size: 0.9rem; cursor: pointer;
+      border-bottom: 1px solid var(--parch-2); color: var(--ink);
+      transition: background 0.12s; display: flex; justify-content: space-between; align-items: center;
+    }
+    .bacaan-dd-item:hover, .bacaan-dd-item:active { background: var(--parch-2); }
+    .bacaan-dd-item .bab-num { font-family: 'Playfair Display', serif; font-size: 0.78rem; color: var(--crimson); }
+    .optional-label { font-size: 0.72rem; color: var(--ink-3); font-family: 'Lora', serif;
+      font-style: italic; margin-left: 5px; font-weight: 400; }
+
+    /* Scroll to top button */
+    .scroll-top {
+      position: fixed; bottom: 80px; right: 16px; z-index: 400;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--crimson); color: #fff; border: none;
+      font-size: 1.1rem; cursor: pointer; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s; box-shadow: 0 2px 10px var(--shadow-deep);
+    }
+    .scroll-top.vis { opacity: 1; pointer-events: auto; }
+
+    /* Page titles */
+    .page-title {
+      font-family: 'Playfair Display', serif; font-size: 0.75rem; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--ink-3); text-align: center;
+      padding: 16px 0 8px;
+    }
+    /* ─── ALKITAB CARI MODAL ─── */
+    .cari-alkitab-box {
+      max-width: 500px; width: 95%; max-height: 92vh;
+      display: flex; flex-direction: column; overflow: hidden;
+      padding: 0; border-radius: 20px;
+    }
+    .cari-alkitab-box .modal-box { padding: 0; border-radius: 20px; overflow: hidden; }
+
+    .ca-topbar {
+      background: linear-gradient(180deg, #14355a 0%, #1e4d7b 100%);
+      padding: 14px 16px 0; position: relative;
+    }
+    .ca-topbar-title {
+      text-align: center; color: #fff; font-family: 'Playfair Display', serif;
+      font-size: 0.95rem; font-weight: 600; letter-spacing: 0.5px;
+      padding-bottom: 10px;
+    }
+    .ca-topbar-close {
+      position: absolute; top: 10px; right: 14px;
+      background: rgba(255,255,255,0.2); border: none; color: #fff;
+      width: 28px; height: 28px; border-radius: 50%; font-size: 0.85rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Tabs: Kitab / Bab / Ayat */
+    .ca-tabs {
+      display: flex; background: rgba(255,255,255,0.1);
+      border-radius: 10px; margin: 0 14px 10px; overflow: hidden;
+    }
+    .ca-tab {
+      flex: 1; padding: 8px 6px; border: none; background: none;
+      color: rgba(255,255,255,0.65); font-family: 'Playfair Display', serif;
+      font-size: 0.75rem; letter-spacing: 0.5px; cursor: pointer;
+      transition: background 0.2s, color 0.2s; text-transform: uppercase;
+    }
+    .ca-tab.aktif {
+      background: rgba(255,255,255,0.25); color: #fff; font-weight: 600;
+      border-radius: 8px;
+    }
+
+    /* Search bar inside modal */
+    .ca-search-wrap {
+      padding: 0 14px 12px; background: linear-gradient(180deg, #1e4d7b 0%, #183f66 100%);
+    }
+    .ca-search-inner {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.92); border-radius: 24px;
+      padding: 8px 14px;
+    }
+    .ca-search-icon { color: #1e4d7b; font-size: 1rem; }
+    .ca-search-input {
+      flex: 1; border: none; outline: none; background: none;
+      font-size: 0.95rem; font-family: 'Lora', serif; color: #111e2e;
+    }
+    .ca-search-input::placeholder { color: #6a96b8; }
+    .ca-search-clear {
+      background: none; border: none; color: #6a96b8; cursor: pointer;
+      font-size: 1rem; padding: 0; line-height: 1;
+    }
+
+    /* Semua Kitab footer dropdown */
+    .ca-filter-bar {
+      background: #183f66; padding: 8px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .ca-filter-label { color: rgba(255,255,255,0.85); font-size: 0.8rem; font-family: 'Playfair Display', serif; }
+    .ca-filter-select {
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; border-radius: 8px; padding: 4px 10px;
+      font-size: 0.78rem; font-family: 'Playfair Display', serif; cursor: pointer; outline: none;
+    }
+
+    /* Book list */
+    .ca-list { flex: 1; overflow-y: auto; background: #f8fbff; }
+    .ca-book-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-bottom: 1px solid #e8eef6;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .ca-book-item:active, .ca-book-item:hover { background: #edf3fa; }
+    .ca-book-icon {
+      width: 32px; height: 32px; background: #e2eaf3; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0; color: #1e4d7b;
+    }
+    .ca-book-name {
+      flex: 1; font-size: 1rem; font-family: 'Lora', serif;
+      color: #111e2e; font-weight: 600;
+    }
+    .ca-book-chapters {
+      font-size: 0.78rem; color: #6a96b8; font-family: 'Lora', serif;
+    }
+    .ca-book-arrow { color: #c2d4e8; font-size: 0.85rem; }
+
+    /* Section headers inside list */
+    .ca-section-header {
+      background: #edf3fa; padding: 6px 16px;
+      font-family: 'Playfair Display', serif; font-size: 0.68rem;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: #1e4d7b; border-bottom: 1px solid #c2d4e8;
+      border-top: 1px solid #c2d4e8; position: sticky; top: 0; z-index: 1;
+    }
+
+    /* Chapter grid view */
+    .ca-chap-header {
+      background: linear-gradient(135deg, #1e4d7b, #183f66);
+      padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+    }
+    .ca-chap-back {
+      background: rgba(255,255,255,0.2); border: none; color: #fff;
+      width: 32px; height: 32px; border-radius: 50%; font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ca-chap-title {
+      color: #fff; font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 600;
+    }
+    .ca-chap-close {
+      margin-left: auto; background: rgba(255,255,255,0.2); border: none; color: #fff;
+      width: 32px; height: 32px; border-radius: 50%; font-size: 0.85rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .ca-chap-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 8px; padding: 16px;
+    }
+    .ca-chap-btn {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      background: #edf3fa; border: 1.5px solid #c2d4e8; border-radius: 10px;
+      font-family: 'Playfair Display', serif; font-size: 0.9rem; color: #1a2d44;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .ca-chap-btn:hover, .ca-chap-btn:active {
+      background: #1e4d7b; color: #fff; border-color: #1e4d7b; transform: scale(0.96);
+    }
+    .ca-no-result {
+      text-align: center; padding: 30px; color: #6a96b8;
+      font-style: italic; font-size: 0.9rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       DESKTOP RESPONSIVE LAYOUT — ≥ 768px
+       Layout: Sidebar nav kiri (fixed) + konten tengah (scrollable)
+    ═══════════════════════════════════════════════════════ */
+    @media (min-width: 768px) {
+
+      /* ── Body: background kaya dengan dua panel ── */
+      body {
+        background: linear-gradient(135deg, #111e2e 0%, #14355a 35%, var(--parch) 35%);
+        background-attachment: fixed;
+      }
+      body::before { opacity: 0.3; }
+
+      /* ── Bottom nav → Sidebar nav kiri ── */
+      .bottom-nav {
+        position: fixed;
+        top: 0; left: 0; bottom: 0; right: auto;
+        width: 220px;
+        height: 100vh;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        box-shadow: 4px 0 32px rgba(26,45,65,0.45);
+        border-top: none;
+        border-right: 1.5px solid rgba(90,138,176,0.2);
+        padding-top: 0;
+        z-index: 500;
+        background: linear-gradient(180deg, #111e2e 0%, #14355a 50%, var(--crimson-2) 100%);
+        overflow: hidden;
+      }
+
+      /* Logo area di atas sidebar */
+      .bottom-nav::before {
+        content: '';
+        display: block;
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        background: var(--cream) url('icon-192.png') center/cover;
+        border: 2.5px solid rgba(90,138,176,0.5);
+        margin: 28px auto 6px;
+        box-shadow: 0 0 0 5px rgba(90,138,176,0.12), 0 6px 20px rgba(10,20,40,0.3);
+        flex-shrink: 0;
+      }
+
+      /* Label kelompok di sidebar */
+      .bottom-nav::after {
+        content: 'KMKS\A Santo Hieronimus';
+        white-space: pre;
+        display: block;
+        text-align: center;
+        font-family: 'Playfair Display', serif;
+        font-size: 0.62rem;
+        letter-spacing: 1.5px;
+        color: rgba(184,212,232,0.8);
+        margin-bottom: 28px;
+        line-height: 1.7;
+        flex-shrink: 0;
+      }
+
+      .nav-btn {
+        flex: 0 0 auto;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 14px 24px;
+        font-size: 0.78rem;
+        letter-spacing: 1px;
+        border-left: 3px solid transparent;
+        border-radius: 0;
+        color: rgba(184,212,232,0.65);
+        transition: all var(--transition);
+      }
+      .nav-btn .ni { font-size: 1.1rem; }
+      .nav-btn.aktif {
+        color: #fff;
+        background: rgba(255,255,255,0.1);
+        border-left-color: var(--gold-light);
+      }
+      .nav-btn:hover:not(.aktif) {
+        background: rgba(255,255,255,0.06);
+        color: rgba(255,255,255,0.85);
+      }
+
+      /* Versi di bawah sidebar */
+      .nav-btn:last-child::after {
+        display: none;
+      }
+
+      /* ── Semua page: geser kanan dari sidebar ── */
+      .page {
+        margin-left: 220px;
+        min-height: 100vh;
+        padding-bottom: 40px;
+        display: none;
+      }
+      .page.aktif { display: flex; flex-direction: column; align-items: center; }
+
+      /* ── Konten wrapper: max-width elegan ── */
+      .page > * {
+        width: 100%;
+        max-width: 680px;
+      }
+
+      /* ── Header: lebih luas & proporsional ── */
+      .header {
+        max-width: 100%;
+        width: 100%;
+        border-radius: 0 0 28px 28px;
+        padding: 40px 40px 32px;
+        margin-bottom: 8px;
+      }
+      .logo-ring {
+        width: 100px; height: 100px;
+        margin-bottom: 12px;
+      }
+      .header-title { font-size: 1.25rem; }
+      .header-sub   { font-size: 0.85rem; }
+      .header-group { font-size: 1.05rem; }
+
+      /* ── Quote & section: padding lebih nyaman ── */
+      .quote-strip {
+        max-width: 680px;
+        margin: 22px auto 0;
+        font-size: 1.05rem;
+        padding: 16px 24px;
+      }
+      .section-label { max-width: 680px; margin: 20px auto 12px; }
+
+      /* ── Stats bar lebih besar ── */
+      .stats-bar { max-width: 680px; margin: 14px auto; gap: 14px; }
+      .stat-card { padding: 18px 14px; border-radius: 16px; }
+      .stat-num  { font-size: 2rem; }
+      .stat-lbl  { font-size: 0.8rem; margin-top: 5px; }
+
+      /* ── Progress ── */
+      .progress-wrap { max-width: 680px; margin: 8px auto 16px; }
+
+      /* ── Buttons ── */
+      .btn-group { max-width: 680px; margin: 0 auto 8px; padding: 0 16px; }
+      .btn { font-size: 1.05rem; padding: 16px 24px; }
+      .btn-icon { font-size: 1.3rem; }
+
+      /* ── Footer ── */
+      .footer { max-width: 680px; margin: 0 auto; }
+
+      /* ── Riwayat / Jurnal page ── */
+      #page-jurnal .filter-wrap { max-width: 680px; margin: 0 auto; padding: 16px 16px 8px; }
+      #page-jurnal #riwayatContainer { max-width: 680px; width: 100%; padding: 0 16px; margin: 0 auto; }
+      .page-title { font-size: 0.82rem; padding: 22px 0 10px; letter-spacing: 3px; }
+      .riwayat-item { border-radius: 18px; padding: 18px 20px; }
+      .ri-nama { font-size: 1rem; }
+      .ri-bacaan { font-size: 0.92rem; }
+      .ri-refleksi { font-size: 0.95rem; }
+
+      /* ── Profil page ── */
+      #page-profil .profil-card  { max-width: 680px; width: calc(100% - 32px); margin: 20px auto 14px; padding: 24px; }
+      #page-profil .section-label { max-width: 680px; }
+      #page-profil .leaderboard  { max-width: 680px; width: 100%; padding: 0 16px; margin: 0 auto; }
+      #page-profil .btn-group    { max-width: 680px; }
+      .profil-name { font-size: 1.2rem; }
+      .profil-stat-num { font-size: 1.6rem; }
+
+      /* Leaderboard items lebih besar */
+      .lb-item { padding: 14px 18px; border-radius: 14px; margin-bottom: 9px; }
+      .lb-name  { font-size: 1rem; }
+      .lb-count { font-size: 1rem; }
+
+      /* ── Scroll-to-top: sesuaikan posisi ── */
+      .scroll-top { right: calc(50% - 360px); bottom: 30px; }
+
+      /* ── Install button ── */
+      #installBtn { left: 236px; transform: none; width: auto; max-width: 440px; }
+
+      /* ── Modal: tetap terpusat ── */
+      .modal-box { max-width: 500px; }
+      .modal-box.panduan-box { max-width: 560px; max-height: 82vh; }
+
+      /* ── Toast ── */
+      .toast { bottom: 28px; }
+
+      /* ── Background area kiri sidebar ── */
+      .page::before {
+        content: none;
+      }
+    }
+
+    /* ── Layar lebar (1200px+): konten lebih lega ── */
+    @media (min-width: 1200px) {
+      .bottom-nav { width: 240px; }
+      .page { margin-left: 240px; }
+      .page > * { max-width: 760px; }
+      .quote-strip { max-width: 760px; }
+      .section-label { max-width: 760px; }
+      .stats-bar { max-width: 760px; }
+      .progress-wrap { max-width: 760px; }
+      .btn-group { max-width: 760px; }
+      .footer { max-width: 760px; }
+      #page-jurnal .filter-wrap { max-width: 760px; }
+      #page-jurnal #riwayatContainer { max-width: 760px; }
+      #page-profil .profil-card { max-width: 760px; width: calc(100% - 32px); }
+      #page-profil .leaderboard { max-width: 760px; }
+      #page-profil .btn-group   { max-width: 760px; }
+      .scroll-top { right: calc(50% - 420px); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ PAGE: BERANDA ═══════════════════════ -->
+<div class="page aktif" id="page-beranda">
+
+  <!-- ── KARTU HEADER (hijau + border tegas) ── -->
+  <div style="margin:16px 16px 0; border-radius:24px 24px 0 0; border:3px solid #14355a; overflow:hidden; box-shadow:0 6px 28px rgba(26,45,65,0.3);">
+    <div class="header">
+      <div class="logo-ring">
+        <img src="icon-192.png" alt="Logo KMKS Santo Hieronimus" id="logo-img">
+      </div>
+      <div class="header-title">Kelompok Membaca Kitab Suci</div>
+      <div class="header-sub">Santo Hieronimus</div>
+      <div class="header-group" style="font-style:italic; font-weight:400; font-size:0.88rem; opacity:0.92; line-height:1.5">
+        "Ketidaktahuan akan Kitab Suci<br>adalah ketidaktahuan akan Kristus"
+      </div>
+    </div>
+  </div><!-- /kartu header -->
+
+  <!-- ── AREA PUTIH ── -->
+  <div style="background:#ffffff; margin:0 16px 16px; border-radius:0 0 24px 24px; border:3px solid #14355a; border-top:none; padding:8px 0 4px; box-shadow:0 6px 28px rgba(26,45,65,0.15);">
+
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar" style="justify-content:center">
+      <div class="stat-card" style="max-width:220px;width:100%">
+        <div class="stat-num" id="statHari">0</div>
+        <div class="stat-lbl">Total Bacaan Tersimpan</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap" style="display:block">
+      <div class="progress-label">
+        <span id="progressLabel">Rekap Kitab Kejadian (Kej 25–50)</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div id="progressSub" style="font-size:0.72rem;color:var(--ink-3);margin-top:4px;text-align:center;font-style:italic">
+        Program: 25 Mei – 19 Juni 2026 · Target 25 bab Kejadian (Kej 25–50)
+      </div>
+    </div>
+
+    <div class="section-label">Aksi Harian</div>
+
+    <div class="btn-group">
+      <a href="https://alkitab.katakombe.org" target="_blank" class="btn btn-secondary">
+        <span class="btn-icon">📖</span> Buka Alkitab Online
+      </a>
+      <button class="btn btn-primary" onclick="bukaCariAlkitab()">
+        <span class="btn-icon">🔍</span> Cari Bab Alkitab
+      </button>
+      <button class="btn btn-primary" onclick="bukaJurnal()">
+        <span class="btn-icon">✍️</span> Catat Bacaan Alkitab Anda
+      </button>
+    </div>
+
+    <div class="section-label">Komunitas</div>
+
+    <div class="btn-group" style="margin-bottom:16px">
+      <a href="https://chat.whatsapp.com/IHVY5ujdrHpB8wg4gFy70t" target="_blank" class="btn btn-wa">
+        <span class="btn-icon">💬</span> Grup WhatsApp KMKS
+      </a>
+    </div>
+
+    <div class="footer">© 2026 nitram6691 · <i>AI Enthusiast</i> · Unum Capitulum Verbi Dei Cotidie v6.3</div>
+
+  </div><!-- /area putih -->
+
+</div><!-- /page-beranda -->
+
+
+
+<!-- ═══════════════════════ PAGE: JURNAL ═══════════════════════ -->
+<div class="page" id="page-jurnal">
+  <div class="page-title">Riwayat Bacaan</div>
+  <div class="filter-wrap">
+    <input type="text" class="filter-input" id="filterRiwayat" placeholder="Cari nama / bacaan…" oninput="filterRiwayatList()">
+  </div>
+  <div style="padding:0 14px" id="riwayatContainer"></div>
+</div>
+
+<!-- ═══════════════════════ PAGE: PROFIL ═══════════════════════ -->
+<div class="page" id="page-profil">
+  <div class="page-title">Profil & Papan Peringkat</div>
+  <div class="profil-card" id="profilCard">
+    <div class="profil-name" id="profilNama">—</div>
+    <div class="profil-id" id="profilId">Belum ada data</div>
+    <div class="profil-stats">
+      <div class="profil-stat"><div class="profil-stat-num" id="profilTotal">0</div><div class="profil-stat-lbl">Total Jurnal</div></div>
+      <div class="profil-stat"><div class="profil-stat-num" id="profilBulan">0</div><div class="profil-stat-lbl">Bulan Ini</div></div>
+      <div class="profil-stat"><div class="profil-stat-num" id="profilStreak">0</div><div class="profil-stat-lbl">Streak</div></div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:14px">Papan Peringkat (Lokal)</div>
+  <div class="leaderboard" id="leaderboard"></div>
+
+  <div class="section-label" style="margin-top:10px">Pengaturan</div>
+  <div class="btn-group" style="margin-bottom:14px">
+    <button class="btn btn-secondary" onclick="gantiPeserta()">
+      <span class="btn-icon">👤</span> Ganti Peserta Login
+    </button>
+    <button class="btn btn-secondary" onclick="syncSemuaPerangkat().then(()=>tampilToast('✅ Sinkronisasi dua arah selesai!'))">
+      <span class="btn-icon">🔄</span> Sinkronisasi HP ↔ Laptop
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ BOTTOM NAV ═══════════════════════ -->
+<nav class="bottom-nav">
+  <button class="nav-btn aktif" id="nav-beranda" onclick="pindahPage('beranda')">
+    <span class="ni">🏠</span><span>Beranda</span>
+  </button>
+  <button class="nav-btn" id="nav-jurnal" onclick="pindahPage('jurnal')">
+    <span class="ni">📚</span><span>Jurnal</span>
+  </button>
+  <button class="nav-btn" id="nav-profil" onclick="pindahPage('profil')">
+    <span class="ni">👤</span><span>Profil</span>
+  </button>
+
+</nav>
+
+<!-- ═══════════════════════ MODAL JURNAL ═══════════════════════ -->
+<div class="modal-overlay" id="modalJurnal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span style="font-size:1.4rem">✍️</span>
+      <h4>Jurnal Bacaan Hari Ini</h4>
+    </div>
+    <div class="sync-info">
+      📊 Data tersimpan di perangkat <strong>dan</strong> disinkron dua arah ↔ Spreadsheet.
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nama Peserta</label>
+        <input type="text" id="jNama" readonly class="locked" placeholder="—">
+        <div class="dropdown-list" id="namaDropdown"></div>
+      </div>
+      <div class="form-group">
+        <label>ID Peserta</label>
+        <input type="text" id="jId" placeholder="ketik ID…" autocomplete="off" inputmode="numeric">
+        <div class="input-hint">Ketik ID Anda (mis. 001)</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Tanggal</label>
+      <div class="date-btn-row" id="dateBtnRow"></div>
+      <input type="hidden" id="jTanggal">
+      <div class="input-hint">4 hari tersedia · input bacaan sesuai jadwal masing-masing tanggal (termasuk yang terlambat)</div>
+    </div>
+    <div class="form-group bacaan-wrap">
+      <label>Bacaan Alkitab</label>
+      <div id="jadwalHint" style="display:none;align-items:center;background:linear-gradient(135deg,#e8f4fd,#f0f8ff);border:1.5px solid var(--gold);border-radius:9px;padding:8px 12px;margin-bottom:8px;font-size:0.82rem;color:var(--ink-2);font-family:'Lora',serif;gap:4px;flex-wrap:wrap;"></div>
+      <input type="text" id="jBacaan" placeholder="mis. Kej 25, Kel 3, Yoh 3…" autocomplete="off" oninput="bacaanInput(this)">
+      <div class="bacaan-dd" id="bacaanDropdown"></div>
+      <div class="input-hint" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>⚠️ Input harus sesuai jadwal bacaan tanggal yang dipilih</span>
+        <span class="help-link" onclick="bukaModal('modalPanduan')">📖 Lihat panduan</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Refleksi / Renungan <span class="optional-label">(opsional)</span></label>
+      <textarea id="jRefleksi" placeholder="Monggo dipunisi renunganepun…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="tutupModal('modalJurnal')" style="flex:1">Batal</button>
+      <button class="btn btn-primary" onclick="simpanJurnal()" style="flex:2">💾 Simpan & Kirim</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ═══════════════════════ MISC ═══════════════════════ -->
+<button id="installBtn" class="btn btn-gold" onclick="promptInstall()">
+  <span class="btn-icon">📲</span> Install Aplikasi di HP
+</button>
+<div class="toast" id="toast"></div>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ════════════════════════════════════════════
+// KONFIGURASI
+// ════════════════════════════════════════════
+const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfycbzTs0ET9g86OUPyA3QUt9M_pdmNRXZMDfRfdG8cRqJT0Y8m07oUwJQ385SEbOZ7MIv8/exec";
+// ── Timezone helper — selalu gunakan WIB (Asia/Jakarta, UTC+7) ──────
+function wibDateParts(d) {
+  // Paksa konversi ke timezone Indonesia, tidak peduli setting perangkat
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(d);
+  const get = type => parts.find(p => p.type === type).value;
+  return { y: get('year'), m: get('month'), dd: get('day') };
+}
+function localDateStr(d) {
+  const { y, m, dd } = wibDateParts(d);
+  return `${y}-${m}-${dd}`;
+}
+function localMonthStr(d) {
+  const { y, m } = wibDateParts(d);
+  return `${y}-${m}`;
+}
+// Kembalikan objek Date yang jam-nya sudah di-nol-kan di WIB
+function todayWIB() {
+  const now = new Date();
+  const { y, m, dd } = wibDateParts(now);
+  // Buat Date dari string ISO tanpa timezone agar JS parse sebagai lokal,
+  // lalu kita pakai nilainya hanya untuk kalkulasi selisih hari
+  return new Date(`${y}-${m}-${dd}T00:00:00+07:00`);
+}
+const DAFTAR_PESERTA = [
+  {id:"001",nama:"Anton"},{id:"002",nama:"Hermy"},{id:"003",nama:"Tri"},
+  {id:"004",nama:"Wening"},{id:"005",nama:"Ari"},{id:"006",nama:"Dian"},
+  {id:"007",nama:"Christine"},{id:"008",nama:"Rini"},{id:"009",nama:"Ageng"},
+  {id:"010",nama:"Agnes"},{id:"011",nama:"Yati"},{id:"012",nama:"Dian"},
+  {id:"013",nama:"Nanang"},{id:"014",nama:"Lila"},{id:"015",nama:"Iien"},
+  {id:"016",nama:"Heri"},{id:"017",nama:"Nugroho"},{id:"018",nama:"Tantra"},
+  {id:"019",nama:"Martin"},{id:"020",nama:"Sapto"},{id:"021",nama:"Eka"},
+  {id:"022",nama:"Anton B"},{id:"023",nama:"Iko"},{id:"024",nama:"Danik"},
+  {id:"025",nama:"Narni"},{id:"026",nama:"Ratih"},{id:"027",nama:"Retno"},
+  {id:"028",nama:"MM Sri"},{id:"029",nama:"Pia"},{id:"030",nama:"Maria"},
+  {id:"031",nama:"Djalu"},{id:"032",nama:"Agung"},{id:"033",nama:"Tutik"},
+  {id:"034",nama:"Sri"},{id:"035",nama:"Utha"},{id:"036",nama:"Lius"},
+  {id:"037",nama:"Agus"},{id:"038",nama:"Agnes S"},{id:"039",nama:"Flor"},
+  {id:"040",nama:"Yusi"},{id:"041",nama:"Yuni"},{id:"042",nama:"Nina"},
+  {id:"043",nama:"Risti"},{id:"044",nama:"Agnes"},{id:"045",nama:"John Do"},
+  {id:"046",nama:"Andre"},{id:"047",nama:"Daniel"},{id:"048",nama:"Surat"}
+];
+
+// ════════════════════════════════════════════
+// DATA ALKITAB LENGKAP
+// ════════════════════════════════════════════
+const ALKITAB = {
+  PL: [
+    {n:"Kejadian",b:50},{n:"Keluaran",b:40},{n:"Imamat",b:27},
+    {n:"Bilangan",b:36},{n:"Ulangan",b:34},{n:"Yosua",b:24},
+    {n:"Hakim-hakim",b:21},{n:"Rut",b:4},{n:"1 Samuel",b:31},
+    {n:"2 Samuel",b:24},{n:"1 Raja-raja",b:22},{n:"2 Raja-raja",b:25},
+    {n:"1 Tawarikh",b:29},{n:"2 Tawarikh",b:36},{n:"Ezra",b:10},
+    {n:"Nehemia",b:13},{n:"Ester",b:10},{n:"Ayub",b:42},
+    {n:"Mazmur",b:150},{n:"Amsal",b:31},{n:"Pengkhotbah",b:12},
+    {n:"Kidung Agung",b:8},{n:"Yesaya",b:66},{n:"Yeremia",b:52},
+    {n:"Ratapan",b:5},{n:"Yehezkiel",b:48},{n:"Daniel",b:14},
+    {n:"Hosea",b:14},{n:"Yoel",b:3},{n:"Amos",b:9},
+    {n:"Obaja",b:1},{n:"Yunus",b:4},{n:"Mikha",b:7},
+    {n:"Nahum",b:3},{n:"Habakuk",b:3},{n:"Zefanya",b:3},
+    {n:"Hagai",b:2},{n:"Zakharia",b:14},{n:"Maleakhi",b:4}
+  ],
+  DEU: [
+    {n:"Tobit",b:14},{n:"Yudit",b:16},{n:"1 Makabe",b:16},
+    {n:"2 Makabe",b:15},{n:"Kebijaksanaan Salomo",b:19},
+    {n:"Sirakh",b:51},{n:"Barukh",b:6}
+  ],
+  PB: [
+    {n:"Matius",b:28},{n:"Markus",b:16},{n:"Lukas",b:24},
+    {n:"Yohanes",b:21},{n:"Kisah Para Rasul",b:28},{n:"Roma",b:16},
+    {n:"1 Korintus",b:16},{n:"2 Korintus",b:13},{n:"Galatia",b:6},
+    {n:"Efesus",b:6},{n:"Filipi",b:4},{n:"Kolose",b:4},
+    {n:"1 Tesalonika",b:5},{n:"2 Tesalonika",b:3},{n:"1 Timotius",b:6},
+    {n:"2 Timotius",b:4},{n:"Titus",b:3},{n:"Filemon",b:1},
+    {n:"Ibrani",b:13},{n:"Yakobus",b:5},{n:"1 Petrus",b:5},
+    {n:"2 Petrus",b:3},{n:"1 Yohanes",b:5},{n:"2 Yohanes",b:1},
+    {n:"3 Yohanes",b:1},{n:"Yudas",b:1},{n:"Wahyu",b:22}
+  ]
+};
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let currentPage   = 'beranda';
+let testamenFilter = 'semua';
+let _babKitab = '', _babNo = 0;
+let deferredPrompt = null;
+
+// ════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════
+function pindahPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('aktif'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('aktif'));
+  document.getElementById('page-' + id).classList.add('aktif');
+  document.getElementById('nav-' + id).classList.add('aktif');
+  currentPage = id;
+  window.scrollTo(0, 0);
+  if (id === 'beranda') updateStats();
+  if (id === 'jurnal')  renderRiwayat();
+  if (id === 'profil')  renderProfil();
+}
+
+// ════════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════════
+function getJurnal() { return JSON.parse(localStorage.getItem('jurnalBacaan') || '[]'); }
+
+function updateStats() {
+  const jurnal = getJurnal();
+  const bulanIni = localMonthStr(new Date());
+  const myId   = localStorage.getItem('idUser') || '';
+  const myJrn  = myId ? jurnal.filter(j => j.idPeserta === myId) : jurnal;
+  const total  = myJrn.length;
+  const bulan  = myJrn.filter(j => j.tanggal && j.tanggal.startsWith(bulanIni)).length;
+
+  // Streak: consecutive days with a journal
+  const dates = [...new Set(myJrn.map(j => j.tanggal))].sort();
+  let streak = 0;
+  if (dates.length) {
+    let cur = todayWIB(); // selalu pakai midnight WIB, bukan timezone perangkat
+    for (let i = dates.length-1; i >= 0; i--) {
+      const d = new Date(dates[i]+'T00:00:00+07:00'); // paksa WIB
+      if (Math.abs(cur-d) <= 86400000*1.5) { streak++; cur = d; }
+      else break;
+    }
+  }
+
+  // ── Program Baca Alkitab 25 Mei – 31 Des 2026 (Kej 25 s/d 1Sam 9) ──
+  // Setiap periode = satu kitab; sistem otomatis memilih periode aktif berdasarkan tanggal hari ini.
+  const JADWAL_PROGRAM = [
+    { nama:'Kejadian',    ab:'Kej',  babMulai:25, babAkhir:50, mulai:'2026-05-25', selesai:'2026-06-19',
+      regex:/^(?:Kej(?:adian)?)\s+(\d+)/i },
+    { nama:'Keluaran',    ab:'Kel',  babMulai:1,  babAkhir:40, mulai:'2026-06-20', selesai:'2026-07-29',
+      regex:/^(?:Kel(?:uaran)?)\s+(\d+)/i },
+    { nama:'Imamat',      ab:'Im',   babMulai:1,  babAkhir:27, mulai:'2026-07-30', selesai:'2026-08-25',
+      regex:/^(?:Im(?:amat)?)\s+(\d+)/i },
+    { nama:'Bilangan',    ab:'Bil',  babMulai:1,  babAkhir:36, mulai:'2026-08-26', selesai:'2026-09-30',
+      regex:/^(?:Bil(?:angan)?)\s+(\d+)/i },
+    { nama:'Ulangan',     ab:'Ul',   babMulai:1,  babAkhir:34, mulai:'2026-10-01', selesai:'2026-11-03',
+      regex:/^(?:Ul(?:angan)?)\s+(\d+)/i },
+    { nama:'Yosua',       ab:'Yos',  babMulai:1,  babAkhir:24, mulai:'2026-11-04', selesai:'2026-11-27',
+      regex:/^(?:Yos(?:ua)?)\s+(\d+)/i },
+    { nama:'Hakim-hakim', ab:'Hak',  babMulai:1,  babAkhir:21, mulai:'2026-11-28', selesai:'2026-12-18',
+      regex:/^(?:Hak(?:im(?:-hakim)?)?)\s+(\d+)/i },
+    { nama:'Rut',         ab:'Rut',  babMulai:1,  babAkhir:4,  mulai:'2026-12-19', selesai:'2026-12-22',
+      regex:/^(?:Rut)\s+(\d+)/i },
+    { nama:'1 Samuel',    ab:'1Sam', babMulai:1,  babAkhir:9,  mulai:'2026-12-23', selesai:'2026-12-31',
+      regex:/^(?:1\s*Sam(?:uel)?)\s+(\d+)/i },
+  ];
+
+  const now = new Date();
+  // Cari periode aktif berdasarkan tanggal hari ini
+  let prog = JADWAL_PROGRAM.find(p => {
+    const s = new Date(p.mulai + 'T00:00:00+07:00');
+    const e = new Date(p.selesai + 'T23:59:59+07:00');
+    return now >= s && now <= e;
+  });
+  // Jika belum mulai, pakai periode pertama; jika sudah lewat semua, pakai periode terakhir
+  if (!prog) {
+    const first = new Date(JADWAL_PROGRAM[0].mulai + 'T00:00:00+07:00');
+    prog = now < first ? JADWAL_PROGRAM[0] : JADWAL_PROGRAM[JADWAL_PROGRAM.length - 1];
+  }
+
+  const PROGRAM_START = new Date(prog.mulai + 'T00:00:00+07:00');
+  const PROGRAM_END   = new Date(prog.selesai + 'T23:59:59+07:00');
+  const TARGET_BAB    = prog.babAkhir - prog.babMulai + 1;
+
+  // Format tanggal Indonesia
+  const BULAN_ID = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+  function fmtTgl(d) {
+    return `${d.getDate()} ${BULAN_ID[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  const tglMulaiStr   = fmtTgl(PROGRAM_START);
+  const tglSelesaiStr = fmtTgl(PROGRAM_END);
+  const rangeStr = prog.babMulai > 1 || prog.babAkhir < prog.babMulai + TARGET_BAB
+    ? `${prog.ab} ${prog.babMulai}–${prog.babAkhir}`
+    : prog.ab;
+
+  // Hitung bab yang sudah dibaca pada periode & kitab aktif
+  const jurnalProgres = myId ? myJrn : jurnal;
+  const babDibaca = new Set();
+  jurnalProgres.forEach(j => {
+    if (!j.tanggal) return;
+    const tgl = new Date(j.tanggal + 'T00:00:00+07:00');
+    if (tgl < PROGRAM_START || tgl > PROGRAM_END) return;
+    const bacaan = (j.bacaan || '').trim();
+    const match = bacaan.match(prog.regex);
+    if (match) {
+      const bab = parseInt(match[1], 10);
+      if (bab >= prog.babMulai && bab <= prog.babAkhir) babDibaca.add(bab);
+    }
+  });
+  const babTercapai = babDibaca.size;
+  const pct = Math.min(100, Math.round((babTercapai / TARGET_BAB) * 100));
+
+  // Tampilkan
+  let labelProgres;
+  if (babTercapai >= TARGET_BAB) {
+    labelProgres = `🎉 Selesai! ${rangeStr} tuntas ${TARGET_BAB}/${TARGET_BAB} bab`;
+    document.getElementById('progressPct').textContent = '✅';
+    document.getElementById('progressSub').textContent = `🙏 Selamat! ${prog.nama} (${rangeStr}) tuntas dibaca!`;
+  } else {
+    labelProgres = `Progres Bacaan: ${babTercapai}/${TARGET_BAB} bab`;
+    document.getElementById('progressPct').textContent = pct + '%';
+    document.getElementById('progressSub').textContent = `Program: ${tglMulaiStr} – ${tglSelesaiStr} · Target ${TARGET_BAB} bab ${prog.nama} (${rangeStr})`;
+  }
+  document.getElementById('progressLabel').textContent = labelProgres;
+  document.getElementById('progressFill').style.width  = pct + '%';
+
+  document.getElementById('statHari').textContent = myJrn.length;
+}
+
+// ════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════
+function bukaModal(id) {
+  document.getElementById(id).classList.add('aktif');
+  if (id === 'modalPanduan') {
+    const s = document.getElementById('pandSearch');
+    if (s) { s.value = ''; filterPanduan(''); }
+  }
+}
+function tutupModal(id) { document.getElementById(id).classList.remove('aktif'); }
+
+// ════════════════════════════════════════════
+// JURNAL FORM
+// ════════════════════════════════════════════
+function bukaJurnal(prefillBacaan) {
+  renderDateButtons();
+  document.getElementById('jNama').value     = localStorage.getItem('namaUser') || '';
+  document.getElementById('jId').value       = localStorage.getItem('idUser') || '';
+  document.getElementById('jRefleksi').value = '';
+
+  // Isi bacaan: pakai prefill (dari Cari Alkitab) atau otomatis dari jadwal hari ini
+  if (prefillBacaan) {
+    document.getElementById('jBacaan').value = prefillBacaan;
+  } else {
+    const todayIso   = localDateStr(todayWIB());
+    const jadwalHari = babJadwalPadaTanggal(todayIso);
+    // Hanya isi otomatis jika hari ini masuk jadwal program
+    document.getElementById('jBacaan').value = jadwalHari ? `${jadwalHari.nama} ${jadwalHari.bab}` : '';
+  }
+
+  // Tampilkan hint konfirmasi (atau sembunyikan jika belum ada jadwal)
+  updateJadwalHint(localDateStr(todayWIB()));
+  bukaModal('modalJurnal');
+}
+
+async function simpanJurnal() {
+  const nama     = document.getElementById('jNama').value.trim();
+  const id       = document.getElementById('jId').value.trim();
+  const tanggal  = document.getElementById('jTanggal').value;
+  const bacaan   = document.getElementById('jBacaan').value.trim();
+  const refleksi = document.getElementById('jRefleksi').value.trim();
+
+  // resolve id: if idUser stored and name matches, use stored id
+  // Normalisasi: padStart 3 digit agar konsisten dengan DAFTAR_PESERTA ("019" bukan "19")
+  const rawId = localStorage.getItem('idUser') || id;
+  const idPeserta = rawId ? rawId.toString().padStart(3,'0') : rawId;
+
+  if (!nama || !bacaan) { tampilToast('⚠️ Nama dan bacaan wajib diisi!'); return; }
+  if (!tanggal) { tampilToast('⚠️ Tanggal wajib diisi!'); return; }
+  const tglCek = new Date(tanggal + 'T00:00:00+07:00');
+  if (isNaN(tglCek.getTime()) || !/^\d{4}-\d{2}-\d{2}$/.test(tanggal)) { tampilToast('⚠️ Tanggal tidak valid, silakan pilih ulang!'); return; }
+  // Validasi: tanggal harus PERSIS salah satu dari 4 kotak yang tersedia
+  // Bangun ulang daftar 4 tanggal valid saat ini (sama persis dengan renderDateButtons)
+  const _today4 = todayWIB();
+  const _tglValid = [];
+  for (let i = 0; i <= 3; i++) {
+    const d = new Date(_today4.getTime() - i * 86400000);
+    _tglValid.push(localDateStr(d));
+  }
+
+  if (!_tglValid.includes(tanggal)) {
+    tampilToast('⛔ Tanggal tidak tersedia — pilih salah satu dari 4 kotak tanggal!'); return;
+  }
+
+  // ── Validasi bacaan harus sesuai jadwal pada tanggal yang dipilih ──
+  const jadwalTgl = babJadwalPadaTanggal(tanggal);
+  if (jadwalTgl) {
+    const matchBacaan = bacaan.match(jadwalTgl.regex);
+    if (!matchBacaan) {
+      tampilToast(`⛔ Bacaan tidak sesuai — jadwal tanggal ini: ${jadwalTgl.nama} ${jadwalTgl.bab}`); return;
+    }
+    const babDiisi = parseInt(matchBacaan[1], 10);
+    if (babDiisi !== jadwalTgl.bab) {
+      tampilToast(`⛔ Bab tidak sesuai — jadwal tanggal ini: ${jadwalTgl.nama} ${jadwalTgl.bab}`); return;
+    }
+  }
+
+  const entri = { nama, idPeserta, tanggal, bacaan, refleksi,
+    // Simpan waktu lokal dalam WIB untuk tampilan riwayat (bukan dikirim ke server)
+    waktu: new Intl.DateTimeFormat('id-ID', {
+      timeZone: 'Asia/Jakarta',
+      day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false
+    }).format(new Date()).replace(',', ''),
+    synced: false };
+
+  let jurnal = getJurnal();
+  jurnal.push(entri);
+  localStorage.setItem('jurnalBacaan', JSON.stringify(jurnal));
+  localStorage.setItem('namaUser', nama);
+  if (idPeserta) localStorage.setItem('idUser', idPeserta);
+
+  tutupModal('modalJurnal');
+  tampilToast('✅ Jurnal disimpan! Mengirim ke spreadsheet…');
+  updateStats();
+
+  kirimKeSpreadsheet(entri, jurnal.length - 1);
+}
+
+// ════════════════════════════════════════════
+// RIWAYAT
+// ════════════════════════════════════════════
+function renderRiwayat(q) {
+  const allJurnal = getJurnal();
+  // Simpan index asli sebelum di-reverse agar hapus tetap tepat walau filter aktif
+  const reversed  = allJurnal.map((j, idx) => ({...j, _origIdx: idx})).reverse();
+  const container = document.getElementById('riwayatContainer');
+  q = q || (document.getElementById('filterRiwayat')||{}).value || '';
+  const filtered = q ? reversed.filter(j =>
+    (j.nama||'').toLowerCase().includes(q.toLowerCase()) ||
+    (j.bacaan||'').toLowerCase().includes(q.toLowerCase())
+  ) : reversed;
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state">Belum ada jurnal yang tersimpan.</div>'; return;
+  }
+
+  container.innerHTML = filtered.map((item) => {
+    const realIdx = item._origIdx; // index asli di array, bukan posisi visual
+    const badge = item.synced
+      ? '<span class="badge badge-ok">✅ Terkirim</span>'
+      : '<span class="badge badge-pend">⏳ Lokal</span>';
+    return `
+    <div class="riwayat-item">
+      <div class="ri-head">
+        <div>
+          <span class="ri-nama">${item.nama}</span>
+          <span class="ri-id"> (${item.idPeserta||'?'})</span>
+        </div>
+        <span class="ri-tgl">${formatTgl(item.tanggal)}</span>
+      </div>
+      <div class="ri-bacaan">📖 ${item.bacaan||'—'}</div>
+      <div class="ri-refleksi">${(item.refleksi||'').substring(0,200)}${(item.refleksi||'').length>200?'…':''}</div>
+      <div class="ri-foot">
+        ${badge}
+        <button class="btn-del" onclick="hapusJurnal(${realIdx})">🗑 Hapus</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterRiwayatList() {
+  renderRiwayat(document.getElementById('filterRiwayat').value);
+}
+
+function hapusJurnal(idx) {
+  if (!confirm('Yakin ingin menghapus jurnal ini?')) return;
+  let j = getJurnal(); j.splice(idx,1);
+  localStorage.setItem('jurnalBacaan', JSON.stringify(j));
+  renderRiwayat(); tampilToast('🗑 Jurnal dihapus.');
+}
+
+// ════════════════════════════════════════════
+// PROFIL & LEADERBOARD
+// ════════════════════════════════════════════
+function renderProfil() {
+  const myId   = localStorage.getItem('idUser') || '';
+  const myNama = localStorage.getItem('namaUser') || '—';
+  const jurnal = getJurnal();
+  const bulanIni = localMonthStr(new Date());
+
+  const myJrn  = myId ? jurnal.filter(j => j.idPeserta === myId) : [];
+  const total  = myJrn.length;
+  const bulan  = myJrn.filter(j => j.tanggal && j.tanggal.startsWith(bulanIni)).length;
+
+  const dates = [...new Set(myJrn.map(j => j.tanggal))].sort();
+  let streak = 0;
+  if (dates.length) {
+    let cur = todayWIB(); // selalu pakai midnight WIB
+    for (let i = dates.length-1; i >= 0; i--) {
+      const d = new Date(dates[i]+'T00:00:00+07:00'); // paksa WIB
+      if (Math.abs(cur-d) <= 86400000*1.5) { streak++; cur = d; }
+      else break;
+    }
+  }
+
+  document.getElementById('profilNama').textContent   = myNama || '—';
+  document.getElementById('profilId').textContent     = myId ? `ID: ${myId}` : 'Belum login — catat jurnal dulu';
+  document.getElementById('profilTotal').textContent  = total;
+  document.getElementById('profilBulan').textContent  = bulan;
+  document.getElementById('profilStreak').textContent = streak;
+
+  // Leaderboard: aggregate by peserta
+  const counts = {};
+  jurnal.filter(j => j.tanggal && j.tanggal.startsWith(bulanIni)).forEach(j => {
+    const key = j.idPeserta + '|' + j.nama;
+    counts[key] = (counts[key]||0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,10);
+  const max = sorted[0] ? sorted[0][1] : 1;
+
+  const lbEl = document.getElementById('leaderboard');
+  if (!sorted.length) {
+    lbEl.innerHTML = '<div class="empty-state">Belum ada data bulan ini.</div>'; return;
+  }
+  lbEl.innerHTML = sorted.map(([key, cnt], i) => {
+    const [,name] = key.split('|');
+    const rankCls = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    const rankSym = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+    const pct = Math.round((cnt/max)*100);
+    return `
+    <div class="lb-item">
+      <div class="lb-rank ${rankCls}">${rankSym}</div>
+      <div style="flex:1">
+        <div class="lb-name">${name}</div>
+        <div class="lb-bar"><div class="lb-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="lb-count">${cnt}x</div>
+    </div>`;
+  }).join('');
+}
+
+function gantiPeserta() {
+  localStorage.removeItem('namaUser'); localStorage.removeItem('idUser');
+  tampilToast('👤 Data peserta di-reset. Silakan catat jurnal baru.');
+  renderProfil();
+}
+
+// ════════════════════════════════════════════
+// SPREADSHEET
+// ════════════════════════════════════════════
+async function kirimKeSpreadsheet(entri, indeks) {
+  if (!navigator.onLine) { tampilToast('📵 Offline — tersimpan lokal, kirim saat online.'); return; }
+  try {
+    // [FIX 1] Gunakan POST + JSON body agar tidak masuk doGet dan tidak di-cache browser
+    const resp = await fetch(SPREADSHEET_URL, {
+      method  : 'POST',
+      cache   : 'no-cache',
+      headers : { 'Content-Type': 'text/plain' },   // GAS tidak menerima application/json langsung
+      body    : JSON.stringify({
+        nama      : entri.nama,
+        idPeserta : entri.idPeserta,
+        tanggal   : entri.tanggal,
+        bacaan    : entri.bacaan,
+        refleksi  : entri.refleksi
+        // waktu sengaja tidak dikirim — server selalu pakai WIB server-side
+      })
+    });
+    const result = await resp.json();
+    let j = getJurnal();
+    if (result.status === 'ok' || result.status === 'duplikat') {
+      if (j[indeks]) { j[indeks].synced = true; localStorage.setItem('jurnalBacaan', JSON.stringify(j)); }
+      if (result.status === 'duplikat') {
+        tampilToast('ℹ️ Jurnal ini sudah pernah dikirim sebelumnya.');
+      } else {
+        tampilToast('📊 Terkirim ke Spreadsheet! Berkah Dalem 🙏');
+      }
+    } else {
+      tampilToast('⚠️ Server: ' + (result.pesan || 'Gagal menyimpan. Coba lagi.'));
+    }
+  } catch(e) {
+    tampilToast('💾 Tersimpan lokal, akan coba kirim ulang…');
+  }
+}
+
+async function kirimUlangYangBelumTerkirim() {
+  let jurnal = getJurnal();
+  const pending = jurnal.filter(j => !j.synced);
+  if (!pending.length) return;
+  let berhasil = 0;
+  for (let i = 0; i < jurnal.length; i++) {
+    if (!jurnal[i].synced) {
+      try {
+        // [FIX 2] Konsisten menggunakan POST agar tidak masuk doGet
+        const resp = await fetch(SPREADSHEET_URL, {
+          method  : 'POST',
+          cache   : 'no-cache',
+          headers : { 'Content-Type': 'text/plain' },
+          body    : JSON.stringify({
+            nama      : jurnal[i].nama,
+            idPeserta : jurnal[i].idPeserta,
+            tanggal   : jurnal[i].tanggal,
+            bacaan    : jurnal[i].bacaan,
+            refleksi  : jurnal[i].refleksi
+          })
+        });
+        const result = await resp.json();
+        if (result.status === 'ok' || result.status === 'duplikat') {
+          jurnal[i].synced = true; berhasil++;
+        }
+      } catch(e) {}
+    }
+  }
+  if (berhasil > 0) {
+    localStorage.setItem('jurnalBacaan', JSON.stringify(jurnal));
+    updateStats();
+    if (currentPage === 'jurnal') renderRiwayat();
+    tampilToast(`📤 ${berhasil} jurnal berhasil dikirim ke spreadsheet!`);
+  }
+}
+
+window.addEventListener('online', () => {
+  tampilToast('🌐 Online! Sinkronisasi dua arah…');
+  setTimeout(syncSemuaPerangkat, 1200);
+});
+
+// ════════════════════════════════════════════
+// DROPDOWN AUTOCOMPLETE — PESERTA BY ID
+// ════════════════════════════════════════════
+// ════════════════════════════════════════════
+// SYNC DUA ARAH — HP ↔ Laptop ↔ Spreadsheet
+// ════════════════════════════════════════════
+
+/**
+ * Tarik semua jurnal milik user dari spreadsheet,
+ * lalu gabungkan (merge) dengan data lokal tanpa duplikat.
+ * Kunci unik: idPeserta + tanggal + bacaan (pasal)
+ */
+async function tarikDariSpreadsheet() {
+  const idPeserta = localStorage.getItem('idUser');
+  if (!idPeserta || !navigator.onLine) return;
+
+  try {
+    const url = SPREADSHEET_URL + '?action=tarik&idPeserta=' + encodeURIComponent(idPeserta);
+    const resp = await fetch(url, { method: 'GET', cache: 'no-cache' });
+    const result = await resp.json();
+
+    if (result.status !== 'ok' || !Array.isArray(result.data)) return;
+    if (result.data.length === 0) return;
+
+    let jurnal = getJurnal();
+
+    // Buat kunci unik: idPeserta|tanggal|pasal — sinkron dengan normPasal di Code.gs
+    function buatKunci(j) {
+      const m = (j.bacaan || '').trim().match(/^(\d+\s+\S+|\S+)\s+(\d+)/i);
+      const pasal = m ? (m[1] + ' ' + m[2]).toLowerCase() : (j.bacaan || '').trim().toLowerCase();
+      return (j.idPeserta || '') + '|' + (j.tanggal || '') + '|' + pasal;
+    }
+    const kunciLokal = new Set(jurnal.map(buatKunci));
+
+    let ditambah = 0;
+    result.data.forEach(entri => {
+      // Normalisasi idPeserta: GAS mungkin mengembalikan "19" (lama) atau "019" (baru)
+      const idNorm = entri.idPeserta ? entri.idPeserta.toString().padStart(3,'0') : '';
+      const entriNorm = Object.assign({}, entri, { idPeserta: idNorm });
+      const k = buatKunci(entriNorm);
+      if (!kunciLokal.has(k)) {
+        jurnal.push({
+          nama      : entriNorm.nama,
+          idPeserta : entriNorm.idPeserta,
+          tanggal   : entriNorm.tanggal,
+          bacaan    : entriNorm.bacaan,
+          refleksi  : entriNorm.refleksi || '',
+          waktu     : entriNorm.waktu || '',
+          synced    : true
+        });
+        kunciLokal.add(k);
+        ditambah++;
+      }
+    });
+
+    if (ditambah > 0) {
+      // Urutkan berdasarkan tanggal terbaru
+      jurnal.sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || ''));
+      localStorage.setItem('jurnalBacaan', JSON.stringify(jurnal));
+      updateStats();
+      if (currentPage === 'jurnal')  renderRiwayat();
+      if (currentPage === 'profil')  renderProfil();
+      tampilToast(`☁️ ${ditambah} jurnal baru ditarik dari cloud!`);
+    }
+
+  } catch(e) {
+    // Gagal tarik — tidak apa-apa, coba lagi nanti
+  }
+}
+
+/**
+ * syncSemuaPerangkat():
+ * 1. Kirim ulang jurnal yang belum ter-sync (push)
+ * 2. Tarik data baru dari spreadsheet (pull)
+ * Dipanggil saat DOMContentLoaded dan setiap 30 detik.
+ */
+async function syncSemuaPerangkat() {
+  if (!navigator.onLine) return;
+  await kirimUlangYangBelumTerkirim();
+  await tarikDariSpreadsheet();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // ── Setup dropdown peserta by ID ──────────────────────────────
+  const namaEl = document.getElementById('jNama');
+  const idEl   = document.getElementById('jId');
+  const ddEl   = document.getElementById('namaDropdown');
+
+  function pilih(p) {
+    namaEl.value = p.nama;
+    idEl.value   = p.id;
+    localStorage.setItem('namaUser', p.nama);
+    localStorage.setItem('idUser',   p.id.padStart(3,'0'));
+    ddEl.style.display = 'none'; ddEl.innerHTML = '';
+  }
+
+  idEl.addEventListener('input', function() {
+    const q = this.value.trim();
+    namaEl.value = ''; ddEl.innerHTML = '';
+    if (q.length >= 1) {
+      const padded = q.padStart(3,'0');
+      const matches = DAFTAR_PESERTA.filter(p =>
+        p.id.startsWith(padded) || p.id.startsWith(q)
+      );
+      if (matches.length) {
+        ddEl.style.display = 'block';
+        matches.forEach(p => {
+          const item = document.createElement('div');
+          item.className = 'dropdown-item';
+          item.innerHTML = `<strong>${p.id}</strong> — ${p.nama}`;
+          item.addEventListener('mousedown', e => { e.preventDefault(); pilih(p); });
+          item.addEventListener('touchstart', e => { e.preventDefault(); pilih(p); });
+          ddEl.appendChild(item);
+        });
+        if (matches.length === 1) pilih(matches[0]);
+      } else { ddEl.style.display = 'none'; }
+    } else { ddEl.style.display = 'none'; }
+  });
+
+  document.addEventListener('click', e => {
+    if (!idEl.contains(e.target) && !ddEl.contains(e.target)) ddEl.style.display = 'none';
+  });
+
+  updateStats();
+
+  // ── Sync awal (push pending + pull dari cloud) ────────────────
+  if (navigator.onLine) {
+    setTimeout(syncSemuaPerangkat, 2000);
+  }
+
+  // ── Sync periodik setiap 30 detik ────────────────────────────
+  setInterval(syncSemuaPerangkat, 30000);
+});
+
+// ════════════════════════════════════════════
+// DATE BUTTONS — HANYA 4 HARI TERAKHIR
+// ════════════════════════════════════════════
+function renderDateButtons(preselect) {
+  const row = document.getElementById('dateBtnRow');
+  if (!row) return;
+  row.innerHTML = '';
+  const today = todayWIB();
+
+  // Tentukan defaultDate: kotak yang dipilih otomatis saat modal dibuka
+  // Utamakan hari ini jika ada jadwal, kalau tidak pakai preselect
+  const todayIso   = localDateStr(today);
+  const todayJadwal = babJadwalPadaTanggal(todayIso);
+  const defaultDate = preselect || (todayJadwal ? todayIso : null);
+
+  let defaultSet = false; // pastikan hanya satu kotak yang aktif
+
+  for (let i = 3; i >= 0; i--) {
+    const d      = new Date(today.getTime() - i * 86400000);
+    const iso    = localDateStr(d);
+    const isToday = (i === 0);
+    const dayNum  = new Intl.DateTimeFormat('id-ID', {day:'numeric',  timeZone:'Asia/Jakarta'}).format(d);
+    const monStr  = new Intl.DateTimeFormat('id-ID', {month:'short',  timeZone:'Asia/Jakarta'}).format(d);
+
+    // Cari jadwal bacaan untuk tanggal ini
+    const jadwalBtn  = babJadwalPadaTanggal(iso);
+    const jadwalLabel = jadwalBtn ? `${jadwalBtn.ab} ${jadwalBtn.bab}` : '';
+    const jadwalFull  = jadwalBtn ? `${jadwalBtn.nama} ${jadwalBtn.bab}` : '';
+    const adaJadwal   = !!jadwalBtn;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.date   = iso;
+    btn.dataset.jadwal = jadwalFull;
+
+    if (!adaJadwal) {
+      // Kotak di luar jadwal: tampil abu-abu, tidak bisa diklik
+      btn.className = 'date-pick-btn nonaktif';
+      btn.disabled  = true;
+      btn.innerHTML = `<span class="dpb-day">${dayNum}</span>
+                       <span class="dpb-mon">${isToday ? 'Hari Ini' : monStr}</span>
+                       <span class="dpb-jadwal" style="font-weight:400;opacity:0.45">—</span>`;
+    } else {
+      // Kotak dengan jadwal: aktif, bisa diklik
+      const isDefault = (iso === defaultDate) && !defaultSet;
+      if (isDefault) defaultSet = true;
+      btn.className = 'date-pick-btn' + (isDefault ? ' aktif' : '');
+      btn.innerHTML = `<span class="dpb-day">${dayNum}</span>
+                       <span class="dpb-mon">${isToday ? 'Hari Ini' : monStr}</span>
+                       <span class="dpb-jadwal">📖 ${jadwalLabel}</span>`;
+
+      btn.addEventListener('click', function() {
+        // 1. Tandai kotak ini aktif (hanya di antara kotak yang adaJadwal)
+        document.querySelectorAll('.date-pick-btn:not(.nonaktif)').forEach(b => b.classList.remove('aktif'));
+        this.classList.add('aktif');
+
+        // 2. Set tanggal tersembunyi
+        const tgl = this.dataset.date;
+        document.getElementById('jTanggal').value = tgl;
+
+        // 3. Isi otomatis kolom bacaan
+        const bacaanJadwal = this.dataset.jadwal;
+        const inp = document.getElementById('jBacaan');
+        if (inp && bacaanJadwal) {
+          inp.value = bacaanJadwal;
+          document.getElementById('bacaanDropdown').style.display = 'none';
+          setTimeout(() => {
+            inp.focus();
+            inp.setSelectionRange(inp.value.length, inp.value.length);
+          }, 80);
+        }
+
+        // 4. Update hint konfirmasi
+        updateJadwalHint(tgl);
+      });
+    }
+
+    row.appendChild(btn);
+  }
+
+  // Set tanggal tersembunyi ke kotak default yang aktif
+  if (defaultDate) {
+    document.getElementById('jTanggal').value = defaultDate;
+  }
+}
+
+// ════════════════════════════════════════════
+// BACAAN ALKITAB AUTOCOMPLETE — LENGKAP
+// ════════════════════════════════════════════
+const ALKITAB_REF = [
+  // ── PERJANJIAN LAMA ──
+  // Kejadian 1–24 sudah dicatat manual; dropdown hanya menampilkan bab 25–50
+  {n:"Kejadian",          ab:["kej","ke"],            b:50, bMin:25},
+  {n:"Keluaran",          ab:["kel"],                  b:40},
+  {n:"Imamat",            ab:["im","ima","imat"],       b:27},
+  {n:"Bilangan",          ab:["bil"],                  b:36},
+  {n:"Ulangan",           ab:["ul","ula"],              b:34},
+  {n:"Yosua",             ab:["yos"],                  b:24},
+  {n:"Hakim-hakim",       ab:["hak","hakim"],           b:21},
+  {n:"Rut",               ab:["rut"],                  b:4},
+  // 1 Samuel: program hanya sampai bab 9
+  {n:"1 Samuel",          ab:["1sam","1 sam","1s"],     b:9},
+  {n:"2 Samuel",          ab:["2sam","2 sam","2s"],     b:24},
+  {n:"1 Raja-raja",       ab:["1raj","1 raj","1r"],     b:22},
+  {n:"2 Raja-raja",       ab:["2raj","2 raj","2r"],     b:25},
+  {n:"1 Tawarikh",        ab:["1taw","1 taw"],          b:29},
+  {n:"2 Tawarikh",        ab:["2taw","2 taw"],          b:36},
+  {n:"Ezra",              ab:["ezr","ez"],              b:10},
+  {n:"Nehemia",           ab:["neh"],                  b:13},
+  {n:"Ester",             ab:["est"],                  b:10},
+  {n:"Ayub",              ab:["ayb","ay","ayu"],        b:42},
+  {n:"Mazmur",            ab:["mzm","mz","maz"],        b:150},
+  {n:"Amsal",             ab:["ams"],                  b:31},
+  {n:"Pengkhotbah",       ab:["pkh","peng"],            b:12},
+  {n:"Kidung Agung",      ab:["kid","ka"],              b:8},
+  {n:"Yesaya",            ab:["yes"],                  b:66},
+  {n:"Yeremia",           ab:["yer"],                  b:52},
+  {n:"Ratapan",           ab:["rat"],                  b:5},
+  {n:"Yehezkiel",         ab:["yeh"],                  b:48},
+  {n:"Daniel",            ab:["dan"],                  b:14},
+  {n:"Hosea",             ab:["hos"],                  b:14},
+  {n:"Yoel",              ab:["yoe","yo"],              b:3},
+  {n:"Amos",              ab:["am","amo"],              b:9},
+  {n:"Obaja",             ab:["ob","oba"],              b:1},
+  {n:"Yunus",             ab:["yun","yns"],             b:4},
+  {n:"Mikha",             ab:["mik"],                  b:7},
+  {n:"Nahum",             ab:["nah"],                  b:3},
+  {n:"Habakuk",           ab:["hab"],                  b:3},
+  {n:"Zefanya",           ab:["zef"],                  b:3},
+  {n:"Hagai",             ab:["hag"],                  b:2},
+  {n:"Zakharia",          ab:["za","zak","zakh"],       b:14},
+  {n:"Maleakhi",          ab:["mal"],                  b:4},
+  // ── DEUTEROKANONIKA ──
+  {n:"Tobit",             ab:["tob"],                  b:14},
+  {n:"Yudit",             ab:["ydt"],                  b:16},
+  {n:"1 Makabe",          ab:["1mak","1 mak"],          b:16},
+  {n:"2 Makabe",          ab:["2mak","2 mak"],          b:15},
+  {n:"Kebijaksanaan Salomo",ab:["keb","kbs","wis"],    b:19},
+  {n:"Sirakh",            ab:["sir"],                  b:51},
+  {n:"Barukh",            ab:["bar"],                  b:6},
+  // ── PERJANJIAN BARU ──
+  {n:"Matius",            ab:["mat"],                  b:28},
+  {n:"Markus",            ab:["mrk","mk"],              b:16},
+  {n:"Lukas",             ab:["luk","lk"],              b:24},
+  {n:"Yohanes",           ab:["yoh"],                  b:21},
+  {n:"Kisah Para Rasul",  ab:["kis","kpr"],             b:28},
+  {n:"Roma",              ab:["rm","rom"],              b:16},
+  {n:"1 Korintus",        ab:["1kor","1 kor","1ko"],    b:16},
+  {n:"2 Korintus",        ab:["2kor","2 kor","2ko"],    b:13},
+  {n:"Galatia",           ab:["gal"],                  b:6},
+  {n:"Efesus",            ab:["ef","efe"],              b:6},
+  {n:"Filipi",            ab:["flp","fil"],             b:4},
+  {n:"Kolose",            ab:["kol"],                  b:4},
+  {n:"1 Tesalonika",      ab:["1tes","1 tes"],          b:5},
+  {n:"2 Tesalonika",      ab:["2tes","2 tes"],          b:3},
+  {n:"1 Timotius",        ab:["1tim","1 tim"],          b:6},
+  {n:"2 Timotius",        ab:["2tim","2 tim"],          b:4},
+  {n:"Titus",             ab:["tit"],                  b:3},
+  {n:"Filemon",           ab:["flm"],                  b:1},
+  {n:"Ibrani",            ab:["ibr"],                  b:13},
+  {n:"Yakobus",           ab:["yak"],                  b:5},
+  {n:"1 Petrus",          ab:["1ptr","1 ptr","1pet"],   b:5},
+  {n:"2 Petrus",          ab:["2ptr","2 ptr","2pet"],   b:3},
+  {n:"1 Yohanes",         ab:["1yoh","1 yoh"],          b:5},
+  {n:"2 Yohanes",         ab:["2yoh","2 yoh"],          b:1},
+  {n:"3 Yohanes",         ab:["3yoh","3 yoh"],          b:1},
+  {n:"Yudas",             ab:["yud"],                  b:1},
+  {n:"Wahyu",             ab:["why","wah"],             b:22},
+];
+
+// ════════════════════════════════════════════
+// JADWAL PROGRAM — DATA GLOBAL
+// 1 bab per hari, otomatis sesuai tanggal
+// ════════════════════════════════════════════
+const JADWAL_VAL = [
+  { nama:'Kejadian',    ab:'Kej',  babMulai:25, babAkhir:50, mulai:'2026-05-25', selesai:'2026-06-19',
+    regex:/^(?:Kej(?:adian)?)\s+(\d+)/i },
+  { nama:'Keluaran',    ab:'Kel',  babMulai:1,  babAkhir:40, mulai:'2026-06-20', selesai:'2026-07-29',
+    regex:/^(?:Kel(?:uaran)?)\s+(\d+)/i },
+  { nama:'Imamat',      ab:'Im',   babMulai:1,  babAkhir:27, mulai:'2026-07-30', selesai:'2026-08-25',
+    regex:/^(?:Im(?:amat)?)\s+(\d+)/i },
+  { nama:'Bilangan',    ab:'Bil',  babMulai:1,  babAkhir:36, mulai:'2026-08-26', selesai:'2026-09-30',
+    regex:/^(?:Bil(?:angan)?)\s+(\d+)/i },
+  { nama:'Ulangan',     ab:'Ul',   babMulai:1,  babAkhir:34, mulai:'2026-10-01', selesai:'2026-11-03',
+    regex:/^(?:Ul(?:angan)?)\s+(\d+)/i },
+  { nama:'Yosua',       ab:'Yos',  babMulai:1,  babAkhir:24, mulai:'2026-11-04', selesai:'2026-11-27',
+    regex:/^(?:Yos(?:ua)?)\s+(\d+)/i },
+  { nama:'Hakim-hakim', ab:'Hak',  babMulai:1,  babAkhir:21, mulai:'2026-11-28', selesai:'2026-12-18',
+    regex:/^(?:Hak(?:im(?:-hakim)?)?)\s+(\d+)/i },
+  { nama:'Rut',         ab:'Rut',  babMulai:1,  babAkhir:4,  mulai:'2026-12-19', selesai:'2026-12-22',
+    regex:/^(?:Rut)\s+(\d+)/i },
+  { nama:'1 Samuel',    ab:'1Sam', babMulai:1,  babAkhir:9,  mulai:'2026-12-23', selesai:'2026-12-31',
+    regex:/^(?:1\s*Sam(?:uel)?)\s+(\d+)/i },
+];
+
+/**
+ * Mengembalikan { nama, ab, bab, regex } bab yang dijadwalkan pada isoDate,
+ * atau null jika tanggal di luar semua periode.
+ */
+function babJadwalPadaTanggal(isoDate) {
+  const tgl = new Date(isoDate + 'T00:00:00+07:00');
+  for (const p of JADWAL_VAL) {
+    const s = new Date(p.mulai + 'T00:00:00+07:00');
+    const e = new Date(p.selesai + 'T23:59:59+07:00');
+    if (tgl >= s && tgl <= e) {
+      const hariKe = Math.round((tgl - s) / 86400000); // 0-based
+      const bab = p.babMulai + hariKe;
+      return { nama: p.nama, ab: p.ab, bab, regex: p.regex };
+    }
+  }
+  return null;
+}
+
+/**
+ * Tampilkan/sembunyikan hint jadwal di modal jurnal.
+ * Dipanggil setiap kali tanggal dipilih atau modal dibuka.
+ */
+function updateJadwalHint(isoDate) {
+  const hintEl = document.getElementById('jadwalHint');
+  if (!hintEl) return;
+  const jadwal = babJadwalPadaTanggal(isoDate);
+  if (jadwal) {
+    hintEl.style.display = 'flex';
+    hintEl.innerHTML =
+      `<span>✅ Bacaan terisi otomatis:</span>` +
+      `<strong style="color:var(--crimson);margin-left:6px">${jadwal.nama} ${jadwal.bab}</strong>` +
+      `<span style="margin-left:auto;font-size:0.72rem;color:var(--ink-3);font-style:italic">` +
+      `Tambahkan ayat jika perlu</span>`;
+  } else {
+    hintEl.style.display = 'none';
+  }
+}
+
+/** Isi field bacaan otomatis dengan bacaan jadwal, lalu tutup dropdown. */
+function isiOtomatisBacaan(nilaiBackan) {
+  const inp = document.getElementById('jBacaan');
+  if (inp) {
+    inp.value = nilaiBackan;
+    document.getElementById('bacaanDropdown').style.display = 'none';
+    inp.focus();
+  }
+}
+
+// Build searchable flat array: each entry is {display, value, book, chapter}
+function buildBacaanSuggestions(rawInput) {
+  if (!rawInput.trim()) return [];
+
+  const raw = rawInput.trim();
+  const ql  = raw.toLowerCase();
+
+  // Detect if the query ends with a space-separated number: "Kej 5" or "Yohanes 3"
+  const numMatch = raw.match(/^(.+?)\s+(\d{1,3})\s*$/);
+  const bookQuery  = numMatch ? numMatch[1].toLowerCase() : ql;
+  const chapFilter = numMatch ? parseInt(numMatch[2]) : null;
+
+  // If user has already made a selection and is appending (e.g. "Yohanes 3:"), hide dd
+  if (/\d+\s*[:\-]/.test(raw)) return [];
+
+  // Find matching books
+  const matched = ALKITAB_REF.filter(k => {
+    const nameLow = k.n.toLowerCase();
+    // Match full name contains query
+    if (nameLow.includes(bookQuery)) return true;
+    // Match abbreviation startsWith query
+    return k.ab.some(a => a.startsWith(bookQuery));
+  });
+
+  if (!matched.length) return [];
+
+  const suggestions = [];
+
+  matched.slice(0, 6).forEach(k => {
+    const babMin = k.bMin || 1;   // batas bawah bab (default 1)
+    const babMax = k.b;           // batas atas bab
+
+    if (chapFilter !== null) {
+      // Tampilkan bab sekitar angka yang diketik, dalam batas babMin–babMax
+      const lo = Math.max(babMin, chapFilter - 2);
+      const hi = Math.min(babMax, chapFilter + 2);
+      for (let c = lo; c <= hi; c++) {
+        suggestions.push({ display: k.n, chapter: c, value: `${k.n} ${c}` });
+      }
+    } else {
+      // Selalu tampilkan SEMUA bab yang dijadwalkan untuk kitab ini
+      for (let c = babMin; c <= babMax; c++) {
+        suggestions.push({ display: k.n, chapter: c, value: `${k.n} ${c}` });
+      }
+    }
+  });
+
+  return suggestions;
+}
+
+function bacaanInput(inp) {
+  const dd = document.getElementById('bacaanDropdown');
+  const suggestions = buildBacaanSuggestions(inp.value);
+
+  if (!suggestions.length) { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = '';
+  suggestions.slice(0, 500).forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'bacaan-dd-item';
+    item.innerHTML = `<span>${s.display}</span><span class="bab-num">Bab ${s.chapter}</span>`;
+    const selectFn = () => {
+      inp.value = s.value;
+      inp.focus();
+      setTimeout(() => inp.setSelectionRange(inp.value.length, inp.value.length), 0);
+      dd.style.display = 'none';
+    };
+    item.addEventListener('mousedown', e => { e.preventDefault(); selectFn(); });
+    item.addEventListener('touchstart', e => { e.preventDefault(); selectFn(); });
+    dd.appendChild(item);
+  });
+
+  dd.style.display = 'block';
+}
+
+document.addEventListener('click', e => {
+  const inp = document.getElementById('jBacaan');
+  const dd  = document.getElementById('bacaanDropdown');
+  if (inp && dd && !inp.contains(e.target) && !dd.contains(e.target)) dd.style.display = 'none';
+});
+
+// ════════════════════════════════════════════
+// CLOSE MODAL ON OVERLAY CLICK
+// ════════════════════════════════════════════
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('aktif'); });
+});
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function formatTgl(str) {
+  if (!str) return '';
+  const d = new Date(str + 'T00:00:00+07:00');
+  return d.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+}
+
+function tampilToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._to); t._to = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ════════════════════════════════════════════
+// SCROLL TOP
+// ════════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  document.getElementById('scrollTop').classList.toggle('vis', window.scrollY > 300);
+});
+
+// ════════════════════════════════════════════
+// PWA
+// ════════════════════════════════════════════
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+function promptInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(c => {
+    if (c.outcome === 'accepted') tampilToast('✅ Aplikasi berhasil diinstall!');
+    deferredPrompt = null;
+    document.getElementById('installBtn').style.display = 'none';
+  });
+}
+window.addEventListener('appinstalled', () => tampilToast('🎉 Aplikasi terinstall di HP Anda!'));
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        console.log('SW terdaftar, scope:', reg.scope);
+        // Cek update SW saat app dibuka
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              tampilToast('🔄 Pembaruan tersedia — muat ulang untuk update');
+            }
+          });
+        });
+      })
+      .catch(e => console.warn('SW gagal daftar:', e));
+  });
+}
+
+// ════════════════════════════════════════════
+// PANDUAN SINGKATAN
+// ════════════════════════════════════════════
+function filterPanduan(q) {
+  const ql = q.toLowerCase().trim();
+  const rows = document.querySelectorAll('#modalPanduan .pand-row');
+  let visible = 0;
+  rows.forEach(row => {
+    const name  = row.dataset.name.toLowerCase();
+    const abbr  = row.dataset.abbr.toLowerCase();
+    const match = !ql || name.includes(ql) || abbr.includes(ql);
+    row.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+  // Show/hide section headers based on if they have visible children
+  document.querySelectorAll('#modalPanduan .pand-section').forEach(sec => {
+    const hasVisible = sec.querySelectorAll('.pand-row:not(.hidden)').length > 0;
+    sec.style.display = hasVisible ? '' : 'none';
+  });
+  document.getElementById('pandNoResult').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function pilihPanduan(abbr) {
+  // Switch to jurnal modal, pre-fill bacaan with abbreviation
+  tutupModal('modalPanduan');
+  const inp = document.getElementById('jBacaan');
+  if (inp) {
+    inp.value = abbr + ' ';
+    inp.focus();
+    bacaanInput(inp);   // trigger dropdown
+    setTimeout(() => inp.setSelectionRange(inp.value.length, inp.value.length), 80);
+  }
+  // Make sure jurnal modal is open — selalu lewat bukaJurnal agar renderDateButtons terpanggil
+  if (!document.getElementById('modalJurnal').classList.contains('aktif')) {
+    bukaJurnal();
+  }
+}
+
+// ════════════════════════════════════════════
+// CARI ALKITAB MODAL
+// ════════════════════════════════════════════
+const CA_DATA = [
+  // PL
+  {n:"Kejadian",b:50,t:"PL"},{n:"Keluaran",b:40,t:"PL"},{n:"Imamat",b:27,t:"PL"},
+  {n:"Bilangan",b:36,t:"PL"},{n:"Ulangan",b:34,t:"PL"},{n:"Yosua",b:24,t:"PL"},
+  {n:"Hakim-hakim",b:21,t:"PL"},{n:"Rut",b:4,t:"PL"},{n:"1 Samuel",b:31,t:"PL"},
+  {n:"2 Samuel",b:24,t:"PL"},{n:"1 Raja-raja",b:22,t:"PL"},{n:"2 Raja-raja",b:25,t:"PL"},
+  {n:"1 Tawarikh",b:29,t:"PL"},{n:"2 Tawarikh",b:36,t:"PL"},{n:"Ezra",b:10,t:"PL"},
+  {n:"Nehemia",b:13,t:"PL"},{n:"Ester",b:10,t:"PL"},{n:"Ayub",b:42,t:"PL"},
+  {n:"Mazmur",b:150,t:"PL"},{n:"Amsal",b:31,t:"PL"},{n:"Pengkhotbah",b:12,t:"PL"},
+  {n:"Kidung Agung",b:8,t:"PL"},{n:"Yesaya",b:66,t:"PL"},{n:"Yeremia",b:52,t:"PL"},
+  {n:"Ratapan",b:5,t:"PL"},{n:"Yehezkiel",b:48,t:"PL"},{n:"Daniel",b:14,t:"PL"},
+  {n:"Hosea",b:14,t:"PL"},{n:"Yoel",b:3,t:"PL"},{n:"Amos",b:9,t:"PL"},
+  {n:"Obaja",b:1,t:"PL"},{n:"Yunus",b:4,t:"PL"},{n:"Mikha",b:7,t:"PL"},
+  {n:"Nahum",b:3,t:"PL"},{n:"Habakuk",b:3,t:"PL"},{n:"Zefanya",b:3,t:"PL"},
+  {n:"Hagai",b:2,t:"PL"},{n:"Zakharia",b:14,t:"PL"},{n:"Maleakhi",b:4,t:"PL"},
+  // DEU
+  {n:"Tobit",b:14,t:"DEU"},{n:"Yudit",b:16,t:"DEU"},{n:"1 Makabe",b:16,t:"DEU"},
+  {n:"2 Makabe",b:15,t:"DEU"},{n:"Kebijaksanaan Salomo",b:19,t:"DEU"},
+  {n:"Sirakh",b:51,t:"DEU"},{n:"Barukh",b:6,t:"DEU"},
+  // PB
+  {n:"Matius",b:28,t:"PB"},{n:"Markus",b:16,t:"PB"},{n:"Lukas",b:24,t:"PB"},
+  {n:"Yohanes",b:21,t:"PB"},{n:"Kisah Para Rasul",b:28,t:"PB"},{n:"Roma",b:16,t:"PB"},
+  {n:"1 Korintus",b:16,t:"PB"},{n:"2 Korintus",b:13,t:"PB"},{n:"Galatia",b:6,t:"PB"},
+  {n:"Efesus",b:6,t:"PB"},{n:"Filipi",b:4,t:"PB"},{n:"Kolose",b:4,t:"PB"},
+  {n:"1 Tesalonika",b:5,t:"PB"},{n:"2 Tesalonika",b:3,t:"PB"},{n:"1 Timotius",b:6,t:"PB"},
+  {n:"2 Timotius",b:4,t:"PB"},{n:"Titus",b:3,t:"PB"},{n:"Filemon",b:1,t:"PB"},
+  {n:"Ibrani",b:13,t:"PB"},{n:"Yakobus",b:5,t:"PB"},{n:"1 Petrus",b:5,t:"PB"},
+  {n:"2 Petrus",b:3,t:"PB"},{n:"1 Yohanes",b:5,t:"PB"},{n:"2 Yohanes",b:1,t:"PB"},
+  {n:"3 Yohanes",b:1,t:"PB"},{n:"Yudas",b:1,t:"PB"},{n:"Wahyu",b:22,t:"PB"}
+];
+
+const CA_LABELS = { PL: 'Perjanjian Lama', DEU: 'Deuterokanonika', PB: 'Perjanjian Baru' };
+const CA_ICONS  = { PL: '📜', DEU: '📗', PB: '✝️' };
+
+let _caSelectedBook = null;
+let _caCurrentTab   = 'kitab';
+
+function bukaCariAlkitab() {
+  // Reset state agar selalu mulai dari awal
+  _caSelectedBook = null;
+  document.getElementById('ca-tab-bab').disabled  = true;
+  document.getElementById('ca-tab-ayat').disabled = true;
+  caBackToBooks();
+  document.getElementById('ca-search').value = '';
+  document.getElementById('ca-clear-btn').style.display = 'none';
+  document.getElementById('ca-filter-testament').value = 'semua';
+  caTabSwitch('kitab');
+  caRenderBooks('', 'semua');
+  bukaModal('modalCariAlkitab');
+}
+
+function caTabSwitch(tab) {
+  _caCurrentTab = tab;
+  ['kitab','bab','ayat'].forEach(t => {
+    document.getElementById('ca-tab-'+t).classList.toggle('aktif', t === tab);
+  });
+  if (tab === 'kitab') { caBackToBooks(); }
+  else if (tab === 'bab' && _caSelectedBook) { caShowChapters(_caSelectedBook); }
+}
+
+function caFilterBooks(q) {
+  const testamen = document.getElementById('ca-filter-testament').value;
+  document.getElementById('ca-clear-btn').style.display = q ? 'flex' : 'none';
+  caRenderBooks(q, testamen);
+}
+
+function caClearSearch() {
+  document.getElementById('ca-search').value = '';
+  document.getElementById('ca-clear-btn').style.display = 'none';
+  caFilterBooks('');
+}
+
+function caRenderBooks(q, testamen) {
+  const list = document.getElementById('ca-book-list');
+  const ql = (q||'').toLowerCase().trim();
+  let filtered = CA_DATA.filter(k =>
+    (testamen === 'semua' || k.t === testamen) &&
+    (!ql || k.n.toLowerCase().includes(ql))
+  );
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="ca-no-result">Kitab tidak ditemukan.</div>'; return;
+  }
+
+  let html = '';
+  let lastT = '';
+  filtered.forEach(k => {
+    if (k.t !== lastT) {
+      html += `<div class="ca-section-header">${CA_LABELS[k.t]}</div>`;
+      lastT = k.t;
+    }
+    html += `<div class="ca-book-item" onclick="caSelectBook('${k.n.replace(/'/g,"\\'")}')">
+      <div class="ca-book-icon">${CA_ICONS[k.t]}</div>
+      <span class="ca-book-name">${k.n}</span>
+      <span class="ca-book-chapters">${k.b} Bab</span>
+      <span class="ca-book-arrow">›</span>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function caSelectBook(bookName) {
+  _caSelectedBook = CA_DATA.find(k => k.n === bookName);
+  if (!_caSelectedBook) return;
+  document.getElementById('ca-tab-bab').disabled = false;
+  caShowChapters(_caSelectedBook);
+  caTabSwitch('bab');
+}
+
+function caShowChapters(book) {
+  document.getElementById('ca-view-books').style.display = 'none';
+  const chapView = document.getElementById('ca-view-chapters');
+  chapView.style.display = 'flex';
+  document.getElementById('ca-chap-title').textContent = book.n;
+  document.getElementById('ca-modal-title').textContent = book.n;
+
+  let html = '';
+  for (let c = 1; c <= book.b; c++) {
+    html += `<div class="ca-chap-btn" onclick="caSelectChapter(${c})">${c}</div>`;
+  }
+  document.getElementById('ca-chap-grid').innerHTML = html;
+}
+
+function caSelectChapter(chap) {
+  if (!_caSelectedBook) return;
+  const ref = `${_caSelectedBook.n} ${chap}`;
+  document.getElementById('ca-modal-title').textContent = ref;
+  // Pre-fill jurnal input and close
+  tutupModal('modalCariAlkitab');
+  // Make sure jurnal modal is open and pre-fill
+  const inp = document.getElementById('jBacaan');
+  if (inp) {
+    inp.value = ref;
+    bacaanInput(inp);
+  }
+  if (!document.getElementById('modalJurnal').classList.contains('aktif')) {
+    bukaJurnal(ref);
+  }
+  tampilToast(`📖 ${ref} dipilih — lengkapi jurnal Anda`);
+}
+
+function caBackToBooks() {
+  document.getElementById('ca-view-books').style.display = 'flex';
+  document.getElementById('ca-view-chapters').style.display = 'none';
+}
+
+</script>
+
+<!-- ═══════════════════════ MODAL PANDUAN SINGKATAN ═══════════════════════ -->
+<div class="modal-overlay" id="modalPanduan">
+  <div class="modal-box panduan-box">
+    <div class="modal-header">
+      <span style="font-size:1.4rem">📖</span>
+      <h4>Panduan Singkatan Alkitab</h4>
+      <button class="modal-close" onclick="tutupModal('modalPanduan')">✕</button>
+    </div>
+    <div class="panduan-scroll">
+      <div class="pand-intro">
+        Ketik <strong>singkatan</strong> atau <strong>nama lengkap</strong> kitab di kolom
+        bacaan, lalu tambahkan <strong>nomor bab</strong>.<br>
+        Contoh: <strong>Yoh 3</strong> → Yohanes 3, lalu tambah <strong>:16</strong>
+        untuk Yohanes 3:16.<br>
+        Ketuk baris di bawah untuk langsung mengisi kolom bacaan.
+      </div>
+      <div class="pand-search-wrap">
+        <input class="pand-search" id="pandSearch" placeholder="🔍  Cari nama atau singkatan…" oninput="filterPanduan(this.value)">
+      </div>
+      <div class="pand-no-result" id="pandNoResult">Tidak ditemukan. Coba ketik nama lengkap.</div>
+
+      <!-- PL -->
+      <div class="pand-section" id="pand-pl">
+        <div class="pand-section-title">PERJANJIAN LAMA <span class="pand-tag">39 Kitab</span></div>
+        <div class="pand-grid">
+          <div class="pand-row" data-abbr="Kej"  data-name="Kejadian"          onclick="pilihPanduan('Kej')">  <span class="pand-name">Kejadian</span>          <span class="pand-abbr">Kej</span></div>
+          <div class="pand-row" data-abbr="Kel"  data-name="Keluaran"          onclick="pilihPanduan('Kel')">  <span class="pand-name">Keluaran</span>          <span class="pand-abbr">Kel</span></div>
+          <div class="pand-row" data-abbr="Im"   data-name="Imamat"            onclick="pilihPanduan('Im')">   <span class="pand-name">Imamat</span>            <span class="pand-abbr">Im</span></div>
+          <div class="pand-row" data-abbr="Bil"  data-name="Bilangan"          onclick="pilihPanduan('Bil')">  <span class="pand-name">Bilangan</span>          <span class="pand-abbr">Bil</span></div>
+          <div class="pand-row" data-abbr="Ul"   data-name="Ulangan"           onclick="pilihPanduan('Ul')">   <span class="pand-name">Ulangan</span>           <span class="pand-abbr">Ul</span></div>
+          <div class="pand-row" data-abbr="Yos"  data-name="Yosua"             onclick="pilihPanduan('Yos')">  <span class="pand-name">Yosua</span>             <span class="pand-abbr">Yos</span></div>
+          <div class="pand-row" data-abbr="Hak"  data-name="Hakim-hakim"       onclick="pilihPanduan('Hak')">  <span class="pand-name">Hakim-hakim</span>      <span class="pand-abbr">Hak</span></div>
+          <div class="pand-row" data-abbr="Rut"  data-name="Rut"               onclick="pilihPanduan('Rut')">  <span class="pand-name">Rut</span>               <span class="pand-abbr">Rut</span></div>
+          <div class="pand-row" data-abbr="1Sam" data-name="1 Samuel"          onclick="pilihPanduan('1Sam')"> <span class="pand-name">1 Samuel</span>          <span class="pand-abbr">1Sam</span></div>
+          <div class="pand-row" data-abbr="2Sam" data-name="2 Samuel"          onclick="pilihPanduan('2Sam')"> <span class="pand-name">2 Samuel</span>          <span class="pand-abbr">2Sam</span></div>
+          <div class="pand-row" data-abbr="1Raj" data-name="1 Raja-raja"       onclick="pilihPanduan('1Raj')"> <span class="pand-name">1 Raja-raja</span>       <span class="pand-abbr">1Raj</span></div>
+          <div class="pand-row" data-abbr="2Raj" data-name="2 Raja-raja"       onclick="pilihPanduan('2Raj')"> <span class="pand-name">2 Raja-raja</span>       <span class="pand-abbr">2Raj</span></div>
+          <div class="pand-row" data-abbr="1Taw" data-name="1 Tawarikh"        onclick="pilihPanduan('1Taw')"> <span class="pand-name">1 Tawarikh</span>        <span class="pand-abbr">1Taw</span></div>
+          <div class="pand-row" data-abbr="2Taw" data-name="2 Tawarikh"        onclick="pilihPanduan('2Taw')"> <span class="pand-name">2 Tawarikh</span>        <span class="pand-abbr">2Taw</span></div>
+          <div class="pand-row" data-abbr="Ezr"  data-name="Ezra"              onclick="pilihPanduan('Ezr')">  <span class="pand-name">Ezra</span>              <span class="pand-abbr">Ezr</span></div>
+          <div class="pand-row" data-abbr="Neh"  data-name="Nehemia"           onclick="pilihPanduan('Neh')">  <span class="pand-name">Nehemia</span>           <span class="pand-abbr">Neh</span></div>
+          <div class="pand-row" data-abbr="Est"  data-name="Ester"             onclick="pilihPanduan('Est')">  <span class="pand-name">Ester</span>             <span class="pand-abbr">Est</span></div>
+          <div class="pand-row" data-abbr="Ayb"  data-name="Ayub"              onclick="pilihPanduan('Ayb')">  <span class="pand-name">Ayub</span>              <span class="pand-abbr">Ayb</span></div>
+          <div class="pand-row" data-abbr="Mzm"  data-name="Mazmur"            onclick="pilihPanduan('Mzm')">  <span class="pand-name">Mazmur</span>            <span class="pand-abbr">Mzm</span></div>
+          <div class="pand-row" data-abbr="Ams"  data-name="Amsal"             onclick="pilihPanduan('Ams')">  <span class="pand-name">Amsal</span>             <span class="pand-abbr">Ams</span></div>
+          <div class="pand-row" data-abbr="Pkh"  data-name="Pengkhotbah"       onclick="pilihPanduan('Pkh')">  <span class="pand-name">Pengkhotbah</span>      <span class="pand-abbr">Pkh</span></div>
+          <div class="pand-row" data-abbr="Kid"  data-name="Kidung Agung"      onclick="pilihPanduan('Kid')">  <span class="pand-name">Kidung Agung</span>     <span class="pand-abbr">Kid</span></div>
+          <div class="pand-row" data-abbr="Yes"  data-name="Yesaya"            onclick="pilihPanduan('Yes')">  <span class="pand-name">Yesaya</span>            <span class="pand-abbr">Yes</span></div>
+          <div class="pand-row" data-abbr="Yer"  data-name="Yeremia"           onclick="pilihPanduan('Yer')">  <span class="pand-name">Yeremia</span>           <span class="pand-abbr">Yer</span></div>
+          <div class="pand-row" data-abbr="Rat"  data-name="Ratapan"           onclick="pilihPanduan('Rat')">  <span class="pand-name">Ratapan</span>           <span class="pand-abbr">Rat</span></div>
+          <div class="pand-row" data-abbr="Yeh"  data-name="Yehezkiel"         onclick="pilihPanduan('Yeh')">  <span class="pand-name">Yehezkiel</span>         <span class="pand-abbr">Yeh</span></div>
+          <div class="pand-row" data-abbr="Dan"  data-name="Daniel"            onclick="pilihPanduan('Dan')">  <span class="pand-name">Daniel</span>            <span class="pand-abbr">Dan</span></div>
+          <div class="pand-row" data-abbr="Hos"  data-name="Hosea"             onclick="pilihPanduan('Hos')">  <span class="pand-name">Hosea</span>             <span class="pand-abbr">Hos</span></div>
+          <div class="pand-row" data-abbr="Yoel" data-name="Yoel"              onclick="pilihPanduan('Yoel')"> <span class="pand-name">Yoel</span>              <span class="pand-abbr">Yoel</span></div>
+          <div class="pand-row" data-abbr="Am"   data-name="Amos"              onclick="pilihPanduan('Am')">   <span class="pand-name">Amos</span>              <span class="pand-abbr">Am</span></div>
+          <div class="pand-row" data-abbr="Ob"   data-name="Obaja"             onclick="pilihPanduan('Ob')">   <span class="pand-name">Obaja</span>             <span class="pand-abbr">Ob</span></div>
+          <div class="pand-row" data-abbr="Yun"  data-name="Yunus"             onclick="pilihPanduan('Yun')">  <span class="pand-name">Yunus</span>             <span class="pand-abbr">Yun</span></div>
+          <div class="pand-row" data-abbr="Mik"  data-name="Mikha"             onclick="pilihPanduan('Mik')">  <span class="pand-name">Mikha</span>             <span class="pand-abbr">Mik</span></div>
+          <div class="pand-row" data-abbr="Nah"  data-name="Nahum"             onclick="pilihPanduan('Nah')">  <span class="pand-name">Nahum</span>             <span class="pand-abbr">Nah</span></div>
+          <div class="pand-row" data-abbr="Hab"  data-name="Habakuk"           onclick="pilihPanduan('Hab')">  <span class="pand-name">Habakuk</span>           <span class="pand-abbr">Hab</span></div>
+          <div class="pand-row" data-abbr="Zef"  data-name="Zefanya"           onclick="pilihPanduan('Zef')">  <span class="pand-name">Zefanya</span>           <span class="pand-abbr">Zef</span></div>
+          <div class="pand-row" data-abbr="Hag"  data-name="Hagai"             onclick="pilihPanduan('Hag')">  <span class="pand-name">Hagai</span>             <span class="pand-abbr">Hag</span></div>
+          <div class="pand-row" data-abbr="Zak"  data-name="Zakharia"          onclick="pilihPanduan('Zak')">  <span class="pand-name">Zakharia</span>          <span class="pand-abbr">Zak</span></div>
+          <div class="pand-row" data-abbr="Mal"  data-name="Maleakhi"          onclick="pilihPanduan('Mal')">  <span class="pand-name">Maleakhi</span>          <span class="pand-abbr">Mal</span></div>
+        </div>
+      </div>
+
+      <!-- DEUTEROKANONIKA -->
+      <div class="pand-section" id="pand-deu">
+        <div class="pand-section-title" style="background:var(--accent)">DEUTEROKANONIKA <span class="pand-tag">7 Kitab</span></div>
+        <div class="pand-grid">
+          <div class="pand-row" data-abbr="Tob"  data-name="Tobit"                    onclick="pilihPanduan('Tob')">  <span class="pand-name">Tobit</span>                    <span class="pand-abbr">Tob</span></div>
+          <div class="pand-row" data-abbr="Ydt"  data-name="Yudit"                    onclick="pilihPanduan('Ydt')">  <span class="pand-name">Yudit</span>                    <span class="pand-abbr">Ydt</span></div>
+          <div class="pand-row" data-abbr="1Mak" data-name="1 Makabe"                 onclick="pilihPanduan('1Mak')"> <span class="pand-name">1 Makabe</span>                 <span class="pand-abbr">1Mak</span></div>
+          <div class="pand-row" data-abbr="2Mak" data-name="2 Makabe"                 onclick="pilihPanduan('2Mak')"> <span class="pand-name">2 Makabe</span>                 <span class="pand-abbr">2Mak</span></div>
+          <div class="pand-row" data-abbr="Keb"  data-name="Kebijaksanaan Salomo"     onclick="pilihPanduan('Keb')">  <span class="pand-name">Kebijaksanaan Salomo</span>     <span class="pand-abbr">Keb</span></div>
+          <div class="pand-row" data-abbr="Sir"  data-name="Sirakh"                   onclick="pilihPanduan('Sir')">  <span class="pand-name">Sirakh</span>                   <span class="pand-abbr">Sir</span></div>
+          <div class="pand-row" data-abbr="Bar"  data-name="Barukh"                   onclick="pilihPanduan('Bar')">  <span class="pand-name">Barukh</span>                   <span class="pand-abbr">Bar</span></div>
+        </div>
+      </div>
+
+      <!-- PB -->
+      <div class="pand-section" id="pand-pb">
+        <div class="pand-section-title" style="background:#2d7a4f">PERJANJIAN BARU <span class="pand-tag">27 Kitab</span></div>
+        <div class="pand-grid">
+          <div class="pand-row" data-abbr="Mat"  data-name="Matius"           onclick="pilihPanduan('Mat')">  <span class="pand-name">Matius</span>           <span class="pand-abbr">Mat</span></div>
+          <div class="pand-row" data-abbr="Mrk"  data-name="Markus"           onclick="pilihPanduan('Mrk')">  <span class="pand-name">Markus</span>           <span class="pand-abbr">Mrk</span></div>
+          <div class="pand-row" data-abbr="Luk"  data-name="Lukas"            onclick="pilihPanduan('Luk')">  <span class="pand-name">Lukas</span>            <span class="pand-abbr">Luk</span></div>
+          <div class="pand-row" data-abbr="Yoh"  data-name="Yohanes"          onclick="pilihPanduan('Yoh')">  <span class="pand-name">Yohanes</span>          <span class="pand-abbr">Yoh</span></div>
+          <div class="pand-row" data-abbr="Kis"  data-name="Kisah Para Rasul" onclick="pilihPanduan('Kis')">  <span class="pand-name">Kisah Para Rasul</span><span class="pand-abbr">Kis</span></div>
+          <div class="pand-row" data-abbr="Rm"   data-name="Roma"             onclick="pilihPanduan('Rm')">   <span class="pand-name">Roma</span>             <span class="pand-abbr">Rm</span></div>
+          <div class="pand-row" data-abbr="1Kor" data-name="1 Korintus"       onclick="pilihPanduan('1Kor')"> <span class="pand-name">1 Korintus</span>       <span class="pand-abbr">1Kor</span></div>
+          <div class="pand-row" data-abbr="2Kor" data-name="2 Korintus"       onclick="pilihPanduan('2Kor')"> <span class="pand-name">2 Korintus</span>       <span class="pand-abbr">2Kor</span></div>
+          <div class="pand-row" data-abbr="Gal"  data-name="Galatia"          onclick="pilihPanduan('Gal')">  <span class="pand-name">Galatia</span>          <span class="pand-abbr">Gal</span></div>
+          <div class="pand-row" data-abbr="Ef"   data-name="Efesus"           onclick="pilihPanduan('Ef')">   <span class="pand-name">Efesus</span>           <span class="pand-abbr">Ef</span></div>
+          <div class="pand-row" data-abbr="Flp"  data-name="Filipi"           onclick="pilihPanduan('Flp')">  <span class="pand-name">Filipi</span>           <span class="pand-abbr">Flp</span></div>
+          <div class="pand-row" data-abbr="Kol"  data-name="Kolose"           onclick="pilihPanduan('Kol')">  <span class="pand-name">Kolose</span>           <span class="pand-abbr">Kol</span></div>
+          <div class="pand-row" data-abbr="1Tes" data-name="1 Tesalonika"     onclick="pilihPanduan('1Tes')"> <span class="pand-name">1 Tesalonika</span>     <span class="pand-abbr">1Tes</span></div>
+          <div class="pand-row" data-abbr="2Tes" data-name="2 Tesalonika"     onclick="pilihPanduan('2Tes')"> <span class="pand-name">2 Tesalonika</span>     <span class="pand-abbr">2Tes</span></div>
+          <div class="pand-row" data-abbr="1Tim" data-name="1 Timotius"       onclick="pilihPanduan('1Tim')"> <span class="pand-name">1 Timotius</span>       <span class="pand-abbr">1Tim</span></div>
+          <div class="pand-row" data-abbr="2Tim" data-name="2 Timotius"       onclick="pilihPanduan('2Tim')"> <span class="pand-name">2 Timotius</span>       <span class="pand-abbr">2Tim</span></div>
+          <div class="pand-row" data-abbr="Tit"  data-name="Titus"            onclick="pilihPanduan('Tit')">  <span class="pand-name">Titus</span>            <span class="pand-abbr">Tit</span></div>
+          <div class="pand-row" data-abbr="Flm"  data-name="Filemon"          onclick="pilihPanduan('Flm')">  <span class="pand-name">Filemon</span>          <span class="pand-abbr">Flm</span></div>
+          <div class="pand-row" data-abbr="Ibr"  data-name="Ibrani"           onclick="pilihPanduan('Ibr')">  <span class="pand-name">Ibrani</span>           <span class="pand-abbr">Ibr</span></div>
+          <div class="pand-row" data-abbr="Yak"  data-name="Yakobus"          onclick="pilihPanduan('Yak')">  <span class="pand-name">Yakobus</span>          <span class="pand-abbr">Yak</span></div>
+          <div class="pand-row" data-abbr="1Ptr" data-name="1 Petrus"         onclick="pilihPanduan('1Ptr')"> <span class="pand-name">1 Petrus</span>         <span class="pand-abbr">1Ptr</span></div>
+          <div class="pand-row" data-abbr="2Ptr" data-name="2 Petrus"         onclick="pilihPanduan('2Ptr')"> <span class="pand-name">2 Petrus</span>         <span class="pand-abbr">2Ptr</span></div>
+          <div class="pand-row" data-abbr="1Yoh" data-name="1 Yohanes"        onclick="pilihPanduan('1Yoh')"> <span class="pand-name">1 Yohanes</span>        <span class="pand-abbr">1Yoh</span></div>
+          <div class="pand-row" data-abbr="2Yoh" data-name="2 Yohanes"        onclick="pilihPanduan('2Yoh')"> <span class="pand-name">2 Yohanes</span>        <span class="pand-abbr">2Yoh</span></div>
+          <div class="pand-row" data-abbr="3Yoh" data-name="3 Yohanes"        onclick="pilihPanduan('3Yoh')"> <span class="pand-name">3 Yohanes</span>        <span class="pand-abbr">3Yoh</span></div>
+          <div class="pand-row" data-abbr="Yud"  data-name="Yudas"            onclick="pilihPanduan('Yud')">  <span class="pand-name">Yudas</span>            <span class="pand-abbr">Yud</span></div>
+          <div class="pand-row" data-abbr="Why"  data-name="Wahyu"            onclick="pilihPanduan('Why')">  <span class="pand-name">Wahyu</span>            <span class="pand-abbr">Why</span></div>
+        </div>
+      </div>
+      <div class="pand-tap-hint">Ketuk nama kitab untuk langsung mengisi kolom bacaan ☝️</div>
+    </div><!-- /panduan-scroll -->
+  </div>
+</div>
+<!-- ═══════════════════════ MODAL CARI ALKITAB ═══════════════════════ -->
+<div class="modal-overlay" id="modalCariAlkitab">
+  <div class="modal-box cari-alkitab-box" style="padding:0;overflow:hidden">
+
+    <!-- Book List View -->
+    <div id="ca-view-books" style="display:flex;flex-direction:column;max-height:92vh">
+      <!-- Top bar -->
+      <div class="ca-topbar">
+        <div class="ca-topbar-title" id="ca-modal-title">TB Kej 1:2</div>
+        <button class="ca-topbar-close" onclick="tutupModal('modalCariAlkitab')">✕</button>
+        <!-- Tabs -->
+        <div class="ca-tabs">
+          <button class="ca-tab aktif" id="ca-tab-kitab" onclick="caTabSwitch('kitab')">Kitab</button>
+          <button class="ca-tab" id="ca-tab-bab" onclick="caTabSwitch('bab')" disabled>Bab</button>
+          <button class="ca-tab" id="ca-tab-ayat" onclick="caTabSwitch('ayat')" disabled>Ayat</button>
+        </div>
+      </div>
+      <!-- Search -->
+      <div class="ca-search-wrap">
+        <div class="ca-search-inner">
+          <span class="ca-search-icon">🔍</span>
+          <input class="ca-search-input" id="ca-search" placeholder="Cari" oninput="caFilterBooks(this.value)">
+          <button class="ca-search-clear" onclick="caClearSearch()" id="ca-clear-btn" style="display:none">✕</button>
+        </div>
+      </div>
+      <!-- Filter bar -->
+      <div class="ca-filter-bar">
+        <span class="ca-filter-label">Filter Testamen</span>
+        <select class="ca-filter-select" id="ca-filter-testament" onchange="caFilterBooks(document.getElementById('ca-search').value)">
+          <option value="semua">Semua Kitab</option>
+          <option value="PL">Perjanjian Lama</option>
+          <option value="DEU">Deuterokanonika</option>
+          <option value="PB">Perjanjian Baru</option>
+        </select>
+      </div>
+      <!-- Book list -->
+      <div class="ca-list" id="ca-book-list"></div>
+    </div>
+
+    <!-- Chapter Grid View -->
+    <div id="ca-view-chapters" style="display:none;flex-direction:column;max-height:92vh">
+      <div class="ca-chap-header">
+        <button class="ca-chap-back" onclick="caBackToBooks()">←</button>
+        <div class="ca-chap-title" id="ca-chap-title">Kejadian</div>
+        <button class="ca-chap-close" onclick="tutupModal('modalCariAlkitab')">✕</button>
+      </div>
+      <div style="overflow-y:auto;flex:1">
+        <div class="ca-chap-grid" id="ca-chap-grid"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
