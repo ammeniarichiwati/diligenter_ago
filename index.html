@@ -957,7 +957,7 @@
       </a>
     </div>
 
-    <div class="footer">© 2026 nitram6691 · <i>AI Enthusiast</i> · Unum Capitulum Verbi Dei Cotidie v6.3</div>
+    <div class="footer">© 2026 nitram6691 · <i>AI Enthusiast</i> · Unum Capitulum Verbi Dei Cotidie v6.6</div>
 
   </div><!-- /area putih -->
 
@@ -1119,9 +1119,47 @@ const DAFTAR_PESERTA = [
   {id:"034",nama:"Sri"},{id:"035",nama:"Utha"},{id:"036",nama:"Lius"},
   {id:"037",nama:"Agus"},{id:"038",nama:"Agnes S"},{id:"039",nama:"Flor"},
   {id:"040",nama:"Yusi"},{id:"041",nama:"Yuni"},{id:"042",nama:"Nina"},
-  {id:"043",nama:"Risti"},{id:"044",nama:"Agnes"},{id:"045",nama:"John Do"},
+  {id:"043",nama:"Risti"},{id:"044",nama:"Rina"},{id:"045",nama:"John Do"},
   {id:"046",nama:"Andre"},{id:"047",nama:"Daniel"},{id:"048",nama:"Surat"}
 ];
+
+// ── Versi daftar peserta — naikkan angka ini setiap kali ada perubahan nama ──
+// Saat halaman dimuat, bila versi di localStorage berbeda, nama user di-refresh
+// otomatis dari DAFTAR_PESERTA tanpa perlu hapus cache manual.
+const DAFTAR_PESERTA_VER = "2";   // <-- ubah ke "3", "4", dst setiap ada koreksi nama
+
+(function sinkronNamaPeserta() {
+  const verTersimpan = localStorage.getItem('daftarPesertaVer');
+  if (verTersimpan === DAFTAR_PESERTA_VER) return;   // tidak ada perubahan, lewati
+
+  // Ada versi baru — perbarui nama user yang sedang login (kalau ada)
+  const idTersimpan = localStorage.getItem('idUser');
+  if (idTersimpan) {
+    const idPadded = idTersimpan.padStart(3, '0');
+    const peserta  = DAFTAR_PESERTA.find(p => p.id === idPadded);
+    if (peserta) {
+      const namaBaru = peserta.nama;
+      const namaLama = localStorage.getItem('namaUser');
+      if (namaLama !== namaBaru) {
+        localStorage.setItem('namaUser', namaBaru);
+        // Perbarui nama di semua jurnal lokal yang dimiliki user ini
+        try {
+          const jurnal = JSON.parse(localStorage.getItem('jurnalBacaan') || '[]');
+          let ada = false;
+          jurnal.forEach(j => {
+            if (j.idPeserta === idPadded && j.nama !== namaBaru) {
+              j.nama = namaBaru; ada = true;
+            }
+          });
+          if (ada) localStorage.setItem('jurnalBacaan', JSON.stringify(jurnal));
+        } catch(e) {}
+      }
+    }
+  }
+
+  // Catat versi sudah diproses
+  localStorage.setItem('daftarPesertaVer', DAFTAR_PESERTA_VER);
+})();
 
 // ════════════════════════════════════════════
 // DATA ALKITAB LENGKAP
